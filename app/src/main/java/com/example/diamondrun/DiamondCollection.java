@@ -1,5 +1,5 @@
 package com.example.diamondrun;
 
 public class DiamondCollection {
-    //collection of diamonds
+    //collection of Diamond object
 }
