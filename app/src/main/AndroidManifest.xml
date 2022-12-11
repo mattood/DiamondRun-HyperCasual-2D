@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DiamondRun"
+<<<<<<< HEAD
         tools:targetApi="31">
         <activity
             android:name=".GameActivity"
@@ -25,5 +26,8 @@
             </intent-filter>
         </activity>
     </application>
+=======
+        tools:targetApi="31" />
+>>>>>>> 92ee3055e2407ac3de76b0eb0e18b544150275a2
 
 </manifest>
