@@ -1,16 +1,28 @@
 package com.example.diamondrun;
 
-public class PlayerDiamond {
-    //gets Diamond object bitmap
-    private int x;
-    private int y;
-    private int speed;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 
-    private void setSpeed(int speed){
-        this.speed = speed;
+public class PlayerDiamond extends Diamond  {
+
+    private Bitmap bitmap;
+
+    public PlayerDiamond(){
+        this.setXLocation(Constants.SCREEN_HEIGHT/2); //centered in screen
+        this.setYLocation((Constants.SCREEN_HEIGHT*8)/9);
     }
 
-    private int getSpeed(){
-        return this.speed;
+    public void draw(Canvas canvas){
+            bitmap = this.getRandomDiamondBitmapColor();
+            canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
     }
+
+
+
+
+
+
+
 }

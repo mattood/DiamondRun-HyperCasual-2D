@@ -1,6 +1,6 @@
 package com.example.diamondrun;
 
 public class Constants {
-    int SCREEN_WIDTH;
-    int SCREEN_HEIGHT;
+    public static int SCREEN_WIDTH;
+    public static int SCREEN_HEIGHT;
 }
