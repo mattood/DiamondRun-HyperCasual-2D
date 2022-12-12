@@ -3,17 +3,35 @@ package com.example.diamondrun;
 public class GameGrid {
 
     //intervals are arbitrary numbers for now
-    public int[] axis1Interval= {0,216};
-    public int[] axis2Interval= {216,432};
-    public int[] axis3Interval={432, 648};
-    public int[] axis4Interval= {648, 864};
-    public int[] axis5Interval = {864, 1080};
+//    public int[] axis1Interval= {0,216};
+//    public int[] axis2Interval= {216,432};
+//    public int[] axis3Interval={432, 648};
+//    public int[] axis4Interval= {648, 864};
+//    public int[] axis5Interval = {864, 1080};
 
+    private int axis_interval;
+
+    GameGrid(int numAxis, int screenWidth){
+        axis_interval = screenWidth/numAxis;
+    }
 
     public int getAxisLength(){
-        int difference = Math.abs(axis1Interval[0]-axis1Interval[1]); //interval length
-        return difference;
+        return axis_interval;
+//        int difference = Math.abs(axis1Interval[0]-axis1Interval[1]); //interval length
+//        return difference;
     }
+
+    // axisIndex = 0 .. numAxis
+    public boolean insideAxis(int axisIndex, int eventGetXLocation) {
+        int leftX = axis_interval * axisIndex;
+        int rightX = (axis_interval * (axisIndex+1)) - 1;
+
+        return (eventGetXLocation >= leftX && eventGetXLocation < rightX);
+    }
+
+  /*
+
+
     public boolean insideAxis1(int eventGetXLocation) {
         if (eventGetXLocation >= axis1Interval[0] && eventGetXLocation <= axis1Interval[1]) {
             return true;
@@ -57,10 +75,12 @@ public class GameGrid {
             return false;
         }
     }
+*/
+    public int getDiamondXposition(int diamondWidth, int axisIndex){
+        int leftX = axis_interval * axisIndex;
 
-    public int getCenterInsideAxis(int diamondWidth, int[] axisInterval){
-        int axisMiddleLocation = (axisInterval[0] + axisInterval[1]) / 2;
-        return axisMiddleLocation - diamondWidth;
+        int leftXofDiamond = leftX + (axis_interval-diamondWidth)/2;
+        return leftXofDiamond;
     }
 
 

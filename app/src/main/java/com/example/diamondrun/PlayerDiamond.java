@@ -9,13 +9,15 @@ public class PlayerDiamond extends Diamond  {
 
     private Bitmap bitmap;
 
-    public PlayerDiamond(){
-        this.setXLocation(Constants.SCREEN_HEIGHT/2); //centered in screen
-        this.setYLocation((Constants.SCREEN_HEIGHT*8)/9);
+    public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
+        super (context, bmWidth, bmHeight);
+
+        this.setXLocation(screenWidth/2); //centered in screen
+        this.setYLocation((screenHeight*8)/9);
     }
 
     public void draw(Canvas canvas){
-            bitmap = this.getRandomDiamondBitmapColor();
+            bitmap = this.getRandomDiamondColorBitmap();
             canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
     }
 

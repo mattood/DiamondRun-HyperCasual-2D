@@ -1,5 +1,6 @@
 package com.example.diamondrun;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -8,47 +9,55 @@ import java.util.LinkedList;
 public class DiamondCollection {
     //collection of Diamond object / connectors
     private LinkedList<Diamond> diamonds;
-    public int maxDiamondsNum = 5;
     private int diamondCollectionYSpeed = 5; //arbitrary
     GameGrid gameGrid;
-    private int topOfScreen;
-    private int speed = 0;
+    private Bitmap bitmap;
+    private int topOfScreen=0;
+    private int bitmapWidth = 0;
+    private int bitmapHeight = 50;
 
-    DiamondCollection(){
-
-        gameGrid = new GameGrid();
+    DiamondCollection(Context context, int numDiamonds, int screenWidth){
+        bitmapWidth = screenWidth/numDiamonds;
+        gameGrid = new GameGrid(numDiamonds, screenWidth);
         diamonds = new LinkedList<Diamond>();//initializing DiamondCollection
-        setCollectionXLocation();
-        topOfScreen = 0;
+        spawnDiamonds(context, numDiamonds);
     }
 
-    private void setCollectionXLocation(){
-        for(int i = 0; i < maxDiamondsNum-1; i++){
-            diamonds.get(0).setXLocation(gameGrid.getCenterInsideAxis(diamonds.getFirst().getBitmapWidth(), gameGrid.axis1Interval)); //setting x in the center of axis1, they all same width so we use first
-            diamonds.get(1).setXLocation(gameGrid.getCenterInsideAxis(diamonds.getFirst().getBitmapWidth(), gameGrid.axis2Interval)); //setting x in the center of axis2
-            diamonds.get(2).setXLocation(gameGrid.getCenterInsideAxis(diamonds.getFirst().getBitmapWidth(), gameGrid.axis3Interval)); //setting x in the center of axis3
-            diamonds.get(3).setXLocation(gameGrid.getCenterInsideAxis(diamonds.getFirst().getBitmapWidth(), gameGrid.axis4Interval)); //setting x in the center of axis4
-            diamonds.get(4).setXLocation(gameGrid.getCenterInsideAxis(diamonds.getFirst().getBitmapWidth(), gameGrid.axis5Interval)); //setting x in the center of axis5
+    public Diamond get_at(int index)
+    {
+        return diamonds.get(index);
+    }
+
+    private void setXLocation(){
+        int bitmapWidth = diamonds.getFirst().getBitmapWidth();
+        int axisLength = gameGrid.getAxisLength();
+
+        for(int i = 0; i < diamonds.size(); i++){
+            diamonds.get(i).setXLocation(gameGrid.getDiamondXposition(bitmapWidth, i)); //setting x in the center of axis1, they all same width so we use first
         }
     }
 
-    public void spawnDiamonds(){
-        for(int i = 0; i < maxDiamondsNum; i++){
-            diamonds.add(new Diamond()); //spawn
-            diamonds.get(i).setYLocation(topOfScreen - diamonds.get(i).getBitmapHeight()); //top of screen - diamond height to start above the screen
+    public void spawnDiamonds(Context context, int numDiamonds){
+        for(int i = 0; i < numDiamonds; i++){ //we seting the size of entire collection here where they are created
+            Diamond d = new Diamond(context, bitmapWidth, bitmapHeight);
+            d.setYLocation(topOfScreen - d.getBitmapHeight());
+            diamonds.add(d);
         }
+        setXLocation();
     }
 
     public void moveDiamondsDownScreen(){
-        for(int i = 0; i < maxDiamondsNum; i++){
-            diamonds.get(i).setYLocation(diamonds.get(i).getYLocation() + this.speed);
-
+        for(int i = 0; i < diamonds.size(); i++){ //going through entire linked list
+            diamonds.get(i).setYLocation(diamonds.get(i).getYLocation() + this.diamondCollectionYSpeed);
         }
     }
 
     public void draw(Canvas canvas){
-        for(int i = 0; i < maxDiamondsNum-1; i++) {
-            canvas.drawBitmap(diamonds.get(i).getRandomDiamondBitmapColor(), diamonds.get(i).getXLocation(), diamonds.get(i).getYLocation(), null);
+
+        for(int i = 0; i < diamonds.size(); i++) {
+            Diamond d = diamonds.get(i);
+            bitmap = d.getRandomDiamondColorBitmap();
+            canvas.drawBitmap(bitmap, d.getXLocation(), d.getYLocation(), null);
         }
     }
 

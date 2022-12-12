@@ -9,6 +9,8 @@ import java.util.Random;
 public class Diamond {
     private int xLocation;
     private int yLocation;
+    private int bitmapWidth;
+    private int bitmapHeight;
     private int width;
     private int height;
     private int speed;
@@ -18,48 +20,53 @@ public class Diamond {
     private Bitmap yellowDiamondBitmap;
     private Bitmap redDiamondBitmap;
     Bitmap[] bitmapColorsArr;
-    GameGrid gameGrid;
-    Context context;
 
-    Diamond(){
-        gameGrid = new GameGrid();
-        initBitmapDiamonds();
+    Diamond() {
     }
 
-    private void initBitmapDiamonds(){
+    Diamond(Context context, int bmWidth, int bmHeight){
+        bitmapWidth = bmWidth;
+        bitmapHeight = bmHeight;
+        initBitmapDiamonds(context);
+    }
+
+    Diamond(Context context){
+        bitmapWidth = 10;
+        bitmapHeight = 10;
+        initBitmapDiamonds(context);
+    }
+
+    public void initBitmapDiamonds(Context context){ //why is it giving context null
         greenDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.greendiamond);
-        greenDiamondBitmap = Bitmap.createScaledBitmap(greenDiamondBitmap, getBitmapWidth(), getBitmapHeight(), false);
+        greenDiamondBitmap = Bitmap.createScaledBitmap(greenDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
         blueDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bluediamond);
-        blueDiamondBitmap = Bitmap.createScaledBitmap(blueDiamondBitmap, getBitmapWidth(), getBitmapHeight(), false);
+        blueDiamondBitmap = Bitmap.createScaledBitmap(blueDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
         redDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.reddiamond);
-        redDiamondBitmap= Bitmap.createScaledBitmap(redDiamondBitmap, getBitmapWidth(), getBitmapHeight(), false);
+        redDiamondBitmap= Bitmap.createScaledBitmap(redDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
         yellowDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.yellowdiamond);
-        yellowDiamondBitmap = Bitmap.createScaledBitmap(yellowDiamondBitmap, getBitmapWidth(), getBitmapHeight(), false);
+        yellowDiamondBitmap = Bitmap.createScaledBitmap(yellowDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
         purpleDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamond);
-        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, getBitmapWidth(), getBitmapHeight(), false);
+        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, bitmapWidth, bitmapHeight, false);
     }
 
 
-    public Bitmap getRandomDiamondBitmapColor(){
+    public Bitmap getRandomDiamondColorBitmap(){ //why is it giving all elements to be null
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
         Random rand = new Random();
         return bitmapColorsArr[rand.nextInt(bitmapColorsArr.length)]; //random bitmap color
     }
 
-    public int getBitmapWidth(){
-        return gameGrid.getAxisLength(); //each bitmap diamond is one axis length so that they connect
-    }
-
-    public void setBitmapHeight(){
-        this.height = 50;
-    } //fix hardcode later
 
     public int getBitmapHeight(){
-        return height;
+        return bitmapHeight;
+    }
+
+    public int getBitmapWidth(){
+        return bitmapWidth;
     }
 
     public void setSpeed(int speed){
