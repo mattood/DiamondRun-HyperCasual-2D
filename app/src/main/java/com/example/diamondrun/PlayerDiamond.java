@@ -14,12 +14,22 @@ public class PlayerDiamond extends Diamond  {
 
         this.setXLocation(screenWidth/2); //centered in screen
         this.setYLocation((screenHeight*8)/9);
+        bitmap = this.getRandomDiamondColorBitmap();
     }
 
     public void draw(Canvas canvas){
-            bitmap = this.getRandomDiamondColorBitmap();
+
             canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
     }
+
+    public void moveRight(){
+        this.setXLocation(this.getXLocation() + this.speed);//speed not set yet
+    }
+
+    public void moveLeft(){
+        this.setXLocation(this.getXLocation() - this.speed); //speed not set yet
+    }
+
 
 
 

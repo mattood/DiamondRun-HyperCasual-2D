@@ -11,29 +11,21 @@ public class Diamond {
     private int yLocation;
     private int bitmapWidth;
     private int bitmapHeight;
-    private int width;
-    private int height;
-    private int speed;
+    public int speed;
     private Bitmap greenDiamondBitmap;
     private Bitmap blueDiamondBitmap;
     private Bitmap purpleDiamondBitmap;
     private Bitmap yellowDiamondBitmap;
     private Bitmap redDiamondBitmap;
     Bitmap[] bitmapColorsArr;
-
-    Diamond() {
-    }
+    Random rand;
 
     Diamond(Context context, int bmWidth, int bmHeight){
         bitmapWidth = bmWidth;
         bitmapHeight = bmHeight;
+        rand = new Random();
         initBitmapDiamonds(context);
-    }
 
-    Diamond(Context context){
-        bitmapWidth = 10;
-        bitmapHeight = 10;
-        initBitmapDiamonds(context);
     }
 
     public void initBitmapDiamonds(Context context){ //why is it giving context null
@@ -41,22 +33,23 @@ public class Diamond {
         greenDiamondBitmap = Bitmap.createScaledBitmap(greenDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
         blueDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bluediamond);
-        blueDiamondBitmap = Bitmap.createScaledBitmap(blueDiamondBitmap, bitmapWidth, bitmapHeight, false);
+        blueDiamondBitmap = Bitmap.createScaledBitmap(blueDiamondBitmap, (bitmapWidth), bitmapHeight, false);
 
         redDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.reddiamond);
-        redDiamondBitmap= Bitmap.createScaledBitmap(redDiamondBitmap, bitmapWidth, bitmapHeight, false);
+        redDiamondBitmap= Bitmap.createScaledBitmap(redDiamondBitmap, (bitmapWidth), bitmapHeight, false);
 
         yellowDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.yellowdiamond);
-        yellowDiamondBitmap = Bitmap.createScaledBitmap(yellowDiamondBitmap, bitmapWidth, bitmapHeight, false);
+        yellowDiamondBitmap = Bitmap.createScaledBitmap(yellowDiamondBitmap, (bitmapWidth), bitmapHeight, false);
 
         purpleDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamond);
-        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, bitmapWidth, bitmapHeight, false);
+        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, (bitmapWidth), bitmapHeight, false);
     }
 
 
-    public Bitmap getRandomDiamondColorBitmap(){ //why is it giving all elements to be null
+    public Bitmap getRandomDiamondColorBitmap(){
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
-        Random rand = new Random();
+        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, (bitmapWidth), bitmapHeight, false);
+
         return bitmapColorsArr[rand.nextInt(bitmapColorsArr.length)]; //random bitmap color
     }
 

@@ -14,13 +14,16 @@ public class DiamondCollection {
     private Bitmap bitmap;
     private int topOfScreen=0;
     private int bitmapWidth = 0;
-    private int bitmapHeight = 50;
+    private int bitmapHeight = 100;
 
     DiamondCollection(Context context, int numDiamonds, int screenWidth){
         bitmapWidth = screenWidth/numDiamonds;
         gameGrid = new GameGrid(numDiamonds, screenWidth);
         diamonds = new LinkedList<Diamond>();//initializing DiamondCollection
         spawnDiamonds(context, numDiamonds);
+        for(int i = 0; i < diamonds.size(); i++){
+            bitmap = diamonds.get(i).getRandomDiamondColorBitmap();
+        }
     }
 
     public Diamond get_at(int index)
@@ -30,15 +33,22 @@ public class DiamondCollection {
 
     private void setXLocation(){
         int bitmapWidth = diamonds.getFirst().getBitmapWidth();
-        int axisLength = gameGrid.getAxisLength();
 
         for(int i = 0; i < diamonds.size(); i++){
-            diamonds.get(i).setXLocation(gameGrid.getDiamondXposition(bitmapWidth, i)); //setting x in the center of axis1, they all same width so we use first
+            diamonds.get(i).setXLocation(gameGrid.getDiamondXposition(bitmapWidth, i));
         }
     }
 
+    public GameGrid getGameGrid(){
+        return this.gameGrid;
+    }
+
+    public int getXLocation(int index){
+        return get_at(index).getXLocation();
+    }
+
     public void spawnDiamonds(Context context, int numDiamonds){
-        for(int i = 0; i < numDiamonds; i++){ //we seting the size of entire collection here where they are created
+        for(int i = 0; i < numDiamonds; i++){ //we setting the size of entire collection here where they are created
             Diamond d = new Diamond(context, bitmapWidth, bitmapHeight);
             d.setYLocation(topOfScreen - d.getBitmapHeight());
             diamonds.add(d);
@@ -56,7 +66,6 @@ public class DiamondCollection {
 
         for(int i = 0; i < diamonds.size(); i++) {
             Diamond d = diamonds.get(i);
-            bitmap = d.getRandomDiamondColorBitmap();
             canvas.drawBitmap(bitmap, d.getXLocation(), d.getYLocation(), null);
         }
     }

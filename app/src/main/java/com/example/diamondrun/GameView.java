@@ -1,13 +1,14 @@
 package com.example.diamondrun;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
 
 public class GameView extends View {
-// move the playerdiamond object
 
     private Handler handler;
     private Runnable r;
@@ -15,9 +16,9 @@ public class GameView extends View {
     private PlayerDiamond playerDiamond;
     private int numDiamonds = 5;
     private int screenX, screenY;
+    private GameGrid gameGrid;
 
-
-    public GameView(Context context, int screenWidth, int screenHeight) {
+    public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
         numDiamonds = 5;
         diamondCollection = new DiamondCollection(context, numDiamonds, screenWidth);
@@ -29,8 +30,9 @@ public class GameView extends View {
                 screenWidth,
                 screenHeight);
 
-        this.screenX = screenWidth;
-        this.screenY = screenHeight;
+        screenX = screenWidth;
+        screenY = screenHeight;
+
 
         handler = new Handler();
         r = new Runnable() {
@@ -45,6 +47,7 @@ public class GameView extends View {
     public void draw(Canvas canvas){
         super.draw(canvas);
         handler.postDelayed(r, 1);
+
         diamondCollection.draw(canvas);
         playerDiamond.draw(canvas);
     }
@@ -56,7 +59,41 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        gameGrid = diamondCollection.getGameGrid();
+
+        switch(event.getAction()) {
+
+
+
+            case MotionEvent.ACTION_DOWN: //this is for taps, check this either first or second
+
+            if (gameGrid.insideAxis(0, (int) event.getX())) { //if he clicked inside axis 1
+                movePlayerDiamondIntoCenterAxis(0); //move him to same location
+                break;
+            }
+            if (gameGrid.insideAxis(1, (int) event.getX())) { //if he clicked inside axis 2
+                movePlayerDiamondIntoCenterAxis(1); //move him to same location
+                break;
+            }
+            if (gameGrid.insideAxis(2, (int) event.getX())) { //if he clicked inside axis 3
+                movePlayerDiamondIntoCenterAxis(2); //move him to same location
+                break;
+            }
+            if (gameGrid.insideAxis(3, (int) event.getX())) { //if he clicked inside axis 4
+                movePlayerDiamondIntoCenterAxis(3); //move him to same location
+                break;
+            }
+            if (gameGrid.insideAxis(4, (int) event.getX())) { //if he clicked inside axis 5
+                movePlayerDiamondIntoCenterAxis(4); //move him to same location
+                break;
+            }
+        }
         return true;
+    }
+
+    public void movePlayerDiamondIntoCenterAxis(int i){
+        playerDiamond.setXLocation(diamondCollection.getXLocation(i)); //set him to same x location as specific diamondCollection index
     }
 
 
