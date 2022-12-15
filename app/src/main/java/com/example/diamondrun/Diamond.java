@@ -19,7 +19,7 @@ public class Diamond {
     private Bitmap redDiamondBitmap;
     Bitmap[] bitmapColorsArr;
     Random rand;
-
+    private Bitmap b;
     Diamond(Context context, int bmWidth, int bmHeight){
         bitmapWidth = bmWidth;
         bitmapHeight = bmHeight;
@@ -48,9 +48,12 @@ public class Diamond {
 
     public Bitmap getRandomDiamondColorBitmap(){
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
-        purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, (bitmapWidth), bitmapHeight, false);
+        b = bitmapColorsArr[rand.nextInt(bitmapColorsArr.length)];
+        return b; //random bitmap color
+    }
 
-        return bitmapColorsArr[rand.nextInt(bitmapColorsArr.length)]; //random bitmap color
+    public Bitmap getDiamondBitmap(){
+        return this.b;
     }
 
 
