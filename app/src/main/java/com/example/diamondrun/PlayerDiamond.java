@@ -9,6 +9,7 @@ import android.graphics.Rect;
 public class PlayerDiamond extends Diamond  {
     private Rect rect;
     private Bitmap bitmap;
+    private int pullDownSpeed = 2;
 
     public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
         super (context, bmWidth, bmHeight);
@@ -25,6 +26,7 @@ public class PlayerDiamond extends Diamond  {
 
     public void draw(Canvas canvas){
         canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
+
     }
 
     public void moveRight(){
@@ -35,12 +37,16 @@ public class PlayerDiamond extends Diamond  {
         this.setXLocation(this.getXLocation() - this.speed); //speed not set yet
     }
 
-    public void moveDown(int numCoordinates){
-        this.setYLocation(this.getYLocation() + numCoordinates);
+    public void freezeXLocation(){
+        this.speed = 0;
+    }
+
+    public void moveDownWithFinger(int eventGetY){
+        this.setYLocation(eventGetY);
     }
 
     public void executeDiamondSlingshot(){
-        moveDown(5); //first diamond gets dragged down preparing for launch
+        //moveDown(5); //first diamond gets dragged down preparing for launch
     }
 
 

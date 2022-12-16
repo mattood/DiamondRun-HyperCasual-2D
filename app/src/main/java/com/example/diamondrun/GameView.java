@@ -27,6 +27,7 @@ public class GameView extends View {
     private int upX;
     Rect rect;
     Timer playerPullDownTimer;
+    private boolean freezePlayerX = false;
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
@@ -87,38 +88,43 @@ public class GameView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         gameGrid = diamondCollection.getGameGrid();
 
-
-        //we need to add the only move when player finger on diamond here and have it working - Matthew
-
-        switch(event.getAction()) {
+        switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
                 initDownY = (int) event.getY();
                 break;
-            case MotionEvent.ACTION_MOVE: //ONLY moving player diamond into the same axis as first time???
-                downX = (int) event.getX();
-                downY = (int) event.getY();
-                if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
-                    movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
-                }
-                if (gameGrid.insideAxis(1, downX)) { //if his finger inside axis 2
-                    movePlayerDiamondIntoCenterAxis(1); //move him to center of this axis
-                }
-                if (gameGrid.insideAxis(2, downX)) { //if his finger inside axis 3
-                    movePlayerDiamondIntoCenterAxis(2); //move him to center of this axis
-                }
-                if (gameGrid.insideAxis(3, downX)) { //if his finger inside axis 4
-                    movePlayerDiamondIntoCenterAxis(3); //move him to center of this axis
-                }
-                if (gameGrid.insideAxis(4, downX)) { //if his finger inside axis 5
-                    movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
-                }
-                if(fingerPullingDown(downY, initDownY)){
-                    Toast.makeText(this.getContext(), "player finger pulled down", Toast.LENGTH_SHORT).show();
 
-                }
-            }
+                    case MotionEvent.ACTION_MOVE: //ONLY moving player diamond into the same axis as first time???
+                        if(freezePlayerX == false) {
+                            downX = (int) event.getX();
+                            downY = (int) event.getY();
+                            if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
+                                movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
+                            }
+                            if (gameGrid.insideAxis(1, downX)) { //if his finger inside axis 2
+                                movePlayerDiamondIntoCenterAxis(1); //move him to center of this axis
+                            }
+                            if (gameGrid.insideAxis(2, downX)) { //if his finger inside axis 3
+                                movePlayerDiamondIntoCenterAxis(2); //move him to center of this axis
+                            }
+                            if (gameGrid.insideAxis(3, downX)) { //if his finger inside axis 4
+                                movePlayerDiamondIntoCenterAxis(3); //move him to center of this axis
+                            }
+                            if (gameGrid.insideAxis(4, downX)) { //if his finger inside axis 5
+                                movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
+                            }
+                        }
+                        //for launch case
+                            if (fingerPullingDown(downY, initDownY) && event.getAction() != MotionEvent.ACTION_UP) {
+                                Toast.makeText(this.getContext(), "player finger pulled down", Toast.LENGTH_SHORT).show();
+                                //freeze x location
+                                //dont let y location move down
+                                this.freezePlayerX = true;
+                                playerDiamond.moveDownWithFinger(downY);
+                            }
 
+                        freezePlayerX = false;
+        }
         return true;
     }
 
