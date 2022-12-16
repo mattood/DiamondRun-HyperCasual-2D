@@ -21,6 +21,7 @@ public class GameView extends View {
     private int screenX, screenY;
     private GameGrid gameGrid;
     private boolean initActionDown = false;
+    private int initDownY;
     private int downX;
     private int downY;
     private int upX;
@@ -85,13 +86,18 @@ public class GameView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         gameGrid = diamondCollection.getGameGrid();
-        downX = (int) event.getX();
-        downY = (int) event.getY();
+
 
         //we need to add the only move when player finger on diamond here and have it working - Matthew
-        
+
         switch(event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+                initDownY = (int) event.getY();
+                break;
             case MotionEvent.ACTION_MOVE: //ONLY moving player diamond into the same axis as first time???
+                downX = (int) event.getX();
+                downY = (int) event.getY();
                 if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
                     movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
                 }
@@ -106,6 +112,10 @@ public class GameView extends View {
                 }
                 if (gameGrid.insideAxis(4, downX)) { //if his finger inside axis 5
                     movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
+                }
+                if(fingerPullingDown(downY, initDownY)){
+                    Toast.makeText(this.getContext(), "player finger pulled down", Toast.LENGTH_SHORT).show();
+
                 }
             }
 
@@ -139,6 +149,16 @@ public class GameView extends View {
 
     public int distance(int var1, int var2){
         return Math.abs(var2 - var1);
+    }
+
+    private boolean fingerPullingDown(int eventGetYInit, int eventGetYFinal){
+
+        if(distance(eventGetYInit, eventGetYFinal) > 100 ){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     private boolean playerFingerOnDiamond(int eventGetX, int eventGetY){

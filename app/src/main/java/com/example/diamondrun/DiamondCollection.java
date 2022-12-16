@@ -7,6 +7,7 @@ import android.graphics.Rect;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 public class DiamondCollection {
     //collection of Diamond object / connectors
@@ -77,6 +78,13 @@ public class DiamondCollection {
 
     public int getXLocation(int index) {
         return get_at(index).getXLocation();
+    }
+
+    private int RandGenerator(int lowerBound, int upperBound){
+        Random rand = new Random();
+        rand.setSeed(System.currentTimeMillis());
+        int num = rand.nextInt(upperBound-lowerBound) + lowerBound;
+        return num;
     }
 
     public void spawnDiamonds(Context context, int numDiamonds) {
