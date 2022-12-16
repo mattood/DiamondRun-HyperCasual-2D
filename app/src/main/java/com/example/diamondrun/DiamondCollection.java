@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class DiamondCollection {
+public class DiamondCollection<num> {
     //collection of Diamond object / connectors
     private LinkedList<Diamond> diamonds;
     private int diamondCollectionYSpeed = 5; //arbitrary
@@ -23,6 +23,9 @@ public class DiamondCollection {
     private int collectionYLocation;
     private boolean initDiamondBitmap = true;
     private Rect rect;
+
+
+
 
     DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
         bitmapWidth = screenWidth / numDiamonds;
@@ -38,7 +41,7 @@ public class DiamondCollection {
         return diamonds.get(index);
     }
 
-    public Rect getRect(int i){ //pass in index upon call
+    public Rect getRect(int i) { //pass in index upon call
         int bitmapHeight = this.get_at(i).getBitmapHeight();
 
         rect = new Rect((int) this.get_at(i).getXLocation(), (int) this.get_at(i).getYLocation(),
@@ -72,7 +75,7 @@ public class DiamondCollection {
         }
     }
 
-    public Bitmap getBitmapAtIndex(int i){
+    public Bitmap getBitmapAtIndex(int i) {
         return this.get_at(i).getDiamondBitmap();
     }
 
@@ -80,12 +83,29 @@ public class DiamondCollection {
         return get_at(index).getXLocation();
     }
 
-    private int RandGenerator(int lowerBound, int upperBound){
+
+
+    int[] scoreNums = {RandGenerator(1, 21)};
+
+    public static int RandGenerator(int lowerBound, int upperBound) {
         Random rand = new Random();
-        rand.setSeed(System.currentTimeMillis());
+         rand.setSeed(System.currentTimeMillis());
         int num = rand.nextInt(upperBound-lowerBound) + lowerBound;
         return num;
     }
+
+    public void setscoreforbitmaps(int[] arr) {
+        scoreNums = arr;
+    }
+
+    public int[] getscoreforbitmaps() {
+        return scoreNums;
+    }
+
+
+
+
+
 
     public void spawnDiamonds(Context context, int numDiamonds) {
         for (int i = 0; i < numDiamonds; i++) { //we setting the size of entire collection here where they are created
@@ -130,6 +150,8 @@ public class DiamondCollection {
                 bitmap = bitmaps.get(i);
             }
             canvas.drawBitmap(bitmap, d.getXLocation(), d.getYLocation(), null);
+            canvas.
+
         }
         initDiamondBitmap = false;
     }
