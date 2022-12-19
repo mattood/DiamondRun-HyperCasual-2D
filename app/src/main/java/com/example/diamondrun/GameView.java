@@ -33,9 +33,9 @@ public class GameView extends View {
     Timer playerPullDownTimer;
     private boolean freezePlayerX = false;
     private int[] scoreNumsArr;
-    private int bitmapScore;
+    Random randScore;
     Paint paint;
-    Random rand;
+    private int MAX_SCORE = 20;
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
@@ -75,11 +75,11 @@ public class GameView extends View {
         diamondCollection.draw(canvas);
         playerDiamond.draw(canvas);
 
-        Random randTemp = new Random();
-        bitmapScore = TestRandGenerator();
+        randScore = new Random(System.currentTimeMillis());
+
         for(int i = 0; i < numDiamonds; i++){
 
-            canvas.drawText("" + bitmapScore, diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), paint);
+            canvas.drawText("" + randScore.nextInt(MAX_SCORE), diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), paint);
         }
 
 
@@ -140,17 +140,6 @@ public class GameView extends View {
         }
         return true;
     }
-
-
-    public int TestRandGenerator() {
-        int lowerBound = 1;
-        int upperBound = 20;
-        rand = new Random();
-        rand.setSeed(System.currentTimeMillis());
-        return rand.nextInt(upperBound-lowerBound) + lowerBound;
-    }
-
-
 
     private boolean diamondCollisionColorsMatched(int i){
         Bitmap diamondCollectionBitmapAtIndex = diamondCollection.getBitmapAtIndex(i);
