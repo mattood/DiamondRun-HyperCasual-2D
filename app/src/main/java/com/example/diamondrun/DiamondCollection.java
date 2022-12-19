@@ -3,8 +3,14 @@ package com.example.diamondrun;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
+import androidx.core.content.res.ResourcesCompat;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -25,8 +31,6 @@ public class DiamondCollection<num> {
     private Rect rect;
 
 
-
-
     DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
         bitmapWidth = screenWidth / numDiamonds;
         this.numDiamonds = numDiamonds;
@@ -36,6 +40,10 @@ public class DiamondCollection<num> {
         bitmaps = new LinkedList<Bitmap>();
         spawnDiamonds(context, numDiamonds);
     }
+
+
+
+
 
     public Diamond get_at(int index) {
         return diamonds.get(index);
@@ -83,30 +91,6 @@ public class DiamondCollection<num> {
         return get_at(index).getXLocation();
     }
 
-
-
-    int[] scoreNums = {RandGenerator(1, 21)};
-
-    public static int RandGenerator(int lowerBound, int upperBound) {
-        Random rand = new Random();
-         rand.setSeed(System.currentTimeMillis());
-        int num = rand.nextInt(upperBound-lowerBound) + lowerBound;
-        return num;
-    }
-
-    public void setscoreforbitmaps(int[] arr) {
-        scoreNums = arr;
-    }
-
-    public int[] getscoreforbitmaps() {
-        return scoreNums;
-    }
-
-
-
-
-
-
     public void spawnDiamonds(Context context, int numDiamonds) {
         for (int i = 0; i < numDiamonds; i++) { //we setting the size of entire collection here where they are created
             Diamond d = new Diamond(context, bitmapWidth, bitmapHeight);
@@ -143,14 +127,17 @@ public class DiamondCollection<num> {
         for (int i = 0; i < diamonds.size(); i++) {
             Diamond d = diamonds.get(i);
             Bitmap bitmap;
+
             if (initDiamondBitmap) {
                 bitmap = d.getRandomDiamondColorBitmap();
                 bitmaps.add(bitmap);
+
+
             } else {
                 bitmap = bitmaps.get(i);
+
             }
             canvas.drawBitmap(bitmap, d.getXLocation(), d.getYLocation(), null);
-            canvas.
 
         }
         initDiamondBitmap = false;

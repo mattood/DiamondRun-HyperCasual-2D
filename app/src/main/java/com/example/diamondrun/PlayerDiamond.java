@@ -10,12 +10,13 @@ public class PlayerDiamond extends Diamond  {
     private Rect rect;
     private Bitmap bitmap;
     private int pullDownSpeed = 2;
-
+    private final int baseLine;
     public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
         super (context, bmWidth, bmHeight);
 
         this.setXLocation(screenWidth/2); //centered in screen
         this.setYLocation((screenHeight*4)/5);
+        baseLine = this.getYLocation();
         bitmap = this.getRandomDiamondColorBitmap();
     }
 
@@ -26,19 +27,26 @@ public class PlayerDiamond extends Diamond  {
 
     public void draw(Canvas canvas){
         canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
-
     }
 
+    public int getBaseStartLine(){
+        return this.baseLine;
+    }
+
+    public boolean belowBaseline(int eventGetX){
+        if(eventGetX > getBaseStartLine()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
     public void moveRight(){
         this.setXLocation(this.getXLocation() + this.speed);//speed not set yet
     }
 
     public void moveLeft(){
         this.setXLocation(this.getXLocation() - this.speed); //speed not set yet
-    }
-
-    public void freezeXLocation(){
-        this.speed = 0;
     }
 
     public void moveDownWithFinger(int eventGetY){

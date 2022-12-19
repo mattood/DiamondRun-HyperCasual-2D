@@ -1,7 +1,5 @@
 package com.example.diamondrun;
 
-import static com.example.diamondrun.DiamondCollection.RandGenerator;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;

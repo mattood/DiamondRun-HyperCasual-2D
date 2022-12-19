@@ -5,11 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
 import android.widget.Toast;
+
+import java.util.Random;
 
 public class GameView extends View {
 
@@ -28,6 +32,10 @@ public class GameView extends View {
     Rect rect;
     Timer playerPullDownTimer;
     private boolean freezePlayerX = false;
+    private int[] scoreNumsArr;
+    private int bitmapScore;
+    Paint paint;
+    Random rand;
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
@@ -46,6 +54,9 @@ public class GameView extends View {
         screenX = screenWidth;
         screenY = screenHeight;
 
+        paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(Math.round(screenWidth/14f));
 
         handler = new Handler();
         r = new Runnable() {
@@ -63,6 +74,15 @@ public class GameView extends View {
 
         diamondCollection.draw(canvas);
         playerDiamond.draw(canvas);
+
+        Random randTemp = new Random();
+        bitmapScore = TestRandGenerator();
+        for(int i = 0; i < numDiamonds; i++){
+
+            canvas.drawText("" + bitmapScore, diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), paint);
+        }
+
+
     }
 
     public void update(){
@@ -91,13 +111,13 @@ public class GameView extends View {
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
-                initDownY = (int) event.getY();
+                initDownY = (int) event.getY(); //getting initial tap location to know if he swipes down
                 break;
 
-                    case MotionEvent.ACTION_MOVE: //ONLY moving player diamond into the same axis as first time???
-                        if(freezePlayerX == false) {
+                    case MotionEvent.ACTION_MOVE:
                             downX = (int) event.getX();
                             downY = (int) event.getY();
+                        if(!playerDiamond.belowBaseline(downY)) { //he can only move x location while hes not launching
                             if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
                                 movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
                             }
@@ -114,19 +134,23 @@ public class GameView extends View {
                                 movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
                             }
                         }
-                        //for launch case
-                            if (fingerPullingDown(downY, initDownY) && event.getAction() != MotionEvent.ACTION_UP) {
-                                Toast.makeText(this.getContext(), "player finger pulled down", Toast.LENGTH_SHORT).show();
-                                //freeze x location
-                                //dont let y location move down
-                                this.freezePlayerX = true;
-                                playerDiamond.moveDownWithFinger(downY);
-                            }
-
-                        freezePlayerX = false;
+                        else{
+                            playerDiamond.moveDownWithFinger(downY);
+                        }
         }
         return true;
     }
+
+
+    public int TestRandGenerator() {
+        int lowerBound = 1;
+        int upperBound = 20;
+        rand = new Random();
+        rand.setSeed(System.currentTimeMillis());
+        return rand.nextInt(upperBound-lowerBound) + lowerBound;
+    }
+
+
 
     private boolean diamondCollisionColorsMatched(int i){
         Bitmap diamondCollectionBitmapAtIndex = diamondCollection.getBitmapAtIndex(i);
@@ -157,8 +181,7 @@ public class GameView extends View {
         return Math.abs(var2 - var1);
     }
 
-    private boolean fingerPullingDown(int eventGetYInit, int eventGetYFinal){
-
+    private boolean fingerPullingDownForLaunch(int eventGetYInit, int eventGetYFinal){
         if(distance(eventGetYInit, eventGetYFinal) > 100 ){
             return true;
         }
