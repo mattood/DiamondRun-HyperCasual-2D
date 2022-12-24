@@ -8,10 +8,10 @@ import java.util.Random;
 
 public class Diamond {
     private int xLocation;
-    private int yLocation;
+    public int yLocation;
     private int bitmapWidth;
     private int bitmapHeight;
-    public int speed;
+    public int speed = 5;
     private Bitmap greenDiamondBitmap;
     private Bitmap blueDiamondBitmap;
     private Bitmap purpleDiamondBitmap;

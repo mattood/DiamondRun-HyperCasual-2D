@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.os.Handler;
@@ -22,6 +23,7 @@ public class GameView extends View {
     private DiamondCollection diamondCollection;
     private PlayerDiamond playerDiamond;
     private int numDiamonds = 5;
+    private boolean maxScoresPrinted = false;
     private int screenX, screenY;
     private GameGrid gameGrid;
     private boolean initActionDown = false;
@@ -29,19 +31,26 @@ public class GameView extends View {
     private int downX;
     private int downY;
     private int upX;
+    private boolean launchSystemTimeAlreadyInitialized = false;
     Rect rect;
     Timer playerPullDownTimer;
     private boolean freezePlayerX = false;
+    private boolean launchOccured = false;
     private int[] scoreNumsArr;
     Random randScore;
     Paint paint;
     private int MAX_SCORE = 20;
-
+    private int launchLocation;
+    private long initLaunchSystemTime;
+    private int diamondWidth;
+    private int diamondHeight;
+    private int randomShakeNum;
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
         playerPullDownTimer = new Timer();
         rect = new Rect();
         numDiamonds = 5;
+        randScore = new Random(System.currentTimeMillis()); //setting the seed
         diamondCollection = new DiamondCollection(context, numDiamonds, screenWidth, screenHeight);
          //gamegrid created here
         playerDiamond = new PlayerDiamond
@@ -53,11 +62,13 @@ public class GameView extends View {
 
         screenX = screenWidth;
         screenY = screenHeight;
-
+        scoreNumsArr = new int[numDiamonds];
         paint = new Paint();
         paint.setColor(Color.BLACK);
+        paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(Math.round(screenWidth/14f));
-
+        diamondWidth = diamondCollection.getGameGrid().getAxisLength();
+        diamondHeight = playerDiamond.getBitmapHeight();
         handler = new Handler();
         r = new Runnable() {
             @Override
@@ -74,22 +85,44 @@ public class GameView extends View {
 
         diamondCollection.draw(canvas);
         playerDiamond.draw(canvas);
+        for (int i = 0; i < numDiamonds; i++) {
+            if(!maxScoresPrinted) {
+                scoreNumsArr[i] = randScore.nextInt(MAX_SCORE);
+            }
 
-        randScore = new Random(System.currentTimeMillis());
+            canvas.drawText( "" + scoreNumsArr[i] , diamondCollection.getXLocation(i) + (diamondWidth/2), diamondCollection.getYLocation(i) + (diamondHeight/2), paint);
 
-        for(int i = 0; i < numDiamonds; i++){
-
-            canvas.drawText("" + randScore.nextInt(MAX_SCORE), diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), paint);
         }
+        maxScoresPrinted = true;
+    }
 
+    public void vibrateForLaunch(){
+        playerDiamond.rotateBitmap(randomShakeNum, playerDiamond.getDiamondBitmap());
+    }
 
+    private int RandGenerator(int lowerBound, int upperBound){
+        Random rand = new Random();
+        rand.setSeed(System.currentTimeMillis());
+        int num = rand.nextInt(upperBound-lowerBound) + lowerBound;
+        return num;
     }
 
     public void update(){
-
+        randomShakeNum = RandGenerator(-10,10);
         diamondCollection.moveDiamondsDownScreen();
+
+        if(!launchOccured && playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)){
+            this.vibrateForLaunch();
+        }
+
+
+        if(launchOccured){ //only occurs when diamond launched
+            playerDiamond.executeDiamondLaunch();
+            playerDiamond.rotateBitmap(0, playerDiamond.getDiamondBitmap());
+        }
+
         if(diamondCollection.diamondCollectionMovedBelowScreen()){ //continue respawning diamonds from top of screen everytime they go below screen
-            diamondCollection.resetYLocation();
+            diamondCollection.resetYLocation(); //back to start
             diamondCollection.moveDiamondsDownScreen();
         }
         //checking for collision
@@ -100,8 +133,15 @@ public class GameView extends View {
                     Toast.makeText(this.getContext(), "two same bitmap colors collided!", Toast.LENGTH_SHORT).show();
                     //shatter animation goes here-matthew
                 }
+                if(launchOccured){ //if launch occurred and collided with diamond, bounce it back to start
+                    playerDiamond.resetYLocation();
+                    launchOccured = false; //resets upon collision and launch
+
+                }
             }
         }
+        handleLaunch();
+
     }
 
     @Override
@@ -117,6 +157,7 @@ public class GameView extends View {
                     case MotionEvent.ACTION_MOVE:
                             downX = (int) event.getX();
                             downY = (int) event.getY();
+
                         if(!playerDiamond.belowBaseline(downY)) { //he can only move x location while hes not launching
                             if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
                                 movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
@@ -134,11 +175,50 @@ public class GameView extends View {
                                 movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
                             }
                         }
-                        else{
+                        else{ //player diamond moving down for launch
                             playerDiamond.moveDownWithFinger(downY);
+                            if(playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)) {
+                                playerDiamond.setYLocation(screenY-playerDiamond.getBitmapHeight());
+
+                            }
                         }
         }
         return true;
+    }
+
+    private boolean playerStayedInLaunchFor3Seconds(long initLaunchSystemTime, int launchLocation, int playerLocation){
+        if(launchLocation == playerLocation && System.currentTimeMillis()-initLaunchSystemTime > 3000 ){ //3 seconds passed since he held down for launch
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private boolean playerDiamondReachedScreenBottom(int playerDiamondY2){
+        if(playerDiamondY2 >= screenY){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private void handleLaunch(){
+        if(playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)){ //diamond y2 cant pass screen bottom while getting rdy to launch
+            launchLocation = playerDiamond.getYLocation(); // we marking this point where his y is frozen
+            if(!launchSystemTimeAlreadyInitialized) {
+                initLaunchSystemTime = System.currentTimeMillis();
+                launchSystemTimeAlreadyInitialized = true;
+            }
+            for(int i = 0; i < numDiamonds; i++) {
+                if(playerStayedInLaunchFor3Seconds(initLaunchSystemTime, launchLocation, playerDiamond.getYLocation())) {
+                    Toast.makeText(this.getContext(), "ready for launch!", Toast.LENGTH_SHORT).show();
+                    launchOccured = true;//is true everytime he launches
+                    launchSystemTimeAlreadyInitialized = false; //resetting this initlaunch system time bool
+                }
+            }
+        }
     }
 
     private boolean diamondCollisionColorsMatched(int i){
