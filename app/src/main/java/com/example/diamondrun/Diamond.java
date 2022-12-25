@@ -12,14 +12,15 @@ public class Diamond {
     private int bitmapWidth;
     private int bitmapHeight;
     public int speed = 5;
-    private Bitmap greenDiamondBitmap;
-    private Bitmap blueDiamondBitmap;
-    private Bitmap purpleDiamondBitmap;
-    private Bitmap yellowDiamondBitmap;
-    private Bitmap redDiamondBitmap;
+    public Bitmap greenDiamondBitmap;
+    public Bitmap blueDiamondBitmap;
+    public Bitmap purpleDiamondBitmap;
+    public Bitmap yellowDiamondBitmap;
+    public Bitmap redDiamondBitmap;
     Bitmap[] bitmapColorsArr;
     Random rand;
     private Bitmap b;
+
     Diamond(Context context, int bmWidth, int bmHeight){
         bitmapWidth = bmWidth;
         bitmapHeight = bmHeight;

@@ -45,6 +45,7 @@ public class GameView extends View {
     private int diamondWidth;
     private int diamondHeight;
     private int randomShakeNum;
+
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
         playerPullDownTimer = new Timer();
@@ -112,13 +113,13 @@ public class GameView extends View {
         diamondCollection.moveDiamondsDownScreen();
 
         if(!launchOccured && playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)){
-            this.vibrateForLaunch();
+            this.vibrateForLaunch(); //vibrates diamond before it launches
         }
 
 
         if(launchOccured){ //only occurs when diamond launched
             playerDiamond.executeDiamondLaunch();
-            playerDiamond.rotateBitmap(0, playerDiamond.getDiamondBitmap());
+            playerDiamond.rotateBitmap(0, playerDiamond.getDiamondBitmap()); //resets diamond matrix angle to 0
         }
 
         if(diamondCollection.diamondCollectionMovedBelowScreen()){ //continue respawning diamonds from top of screen everytime they go below screen
@@ -128,10 +129,10 @@ public class GameView extends View {
         //checking for collision
         for(int i = 0; i < numDiamonds; i++) {
             if(playerAndCollectionCollisionOccurred(i)) {
-                Toast.makeText(this.getContext(), "collision occurred!", Toast.LENGTH_SHORT).show(); //google play sign in successful
+                Toast.makeText(this.getContext(), "collision occurred!", Toast.LENGTH_SHORT).show();
                 if(diamondCollisionColorsMatched(i)){ //we only check for color match upon collision
                     Toast.makeText(this.getContext(), "two same bitmap colors collided!", Toast.LENGTH_SHORT).show();
-                    //shatter animation goes here-matthew
+                    diamondCollection.createDiamondShatterAnimator(i);
                 }
                 if(launchOccured){ //if launch occurred and collided with diamond, bounce it back to start
                     playerDiamond.resetYLocation();
