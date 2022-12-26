@@ -10,6 +10,7 @@ import android.graphics.Rect;
 public class PlayerDiamond extends Diamond  {
     private Rect rect;
     private Bitmap bitmap;
+    private int launchSpeed = 20;
     private int pullDownSpeed = 2;
     private final int baseLine;
     Matrix matrix;
@@ -29,6 +30,16 @@ public class PlayerDiamond extends Diamond  {
         return rect;
     }
 
+
+    public Bitmap getChangedColorBitmap(){
+        Bitmap currentColorBitmap = this.bitmap;
+        Bitmap newColorBitmap = this.getRandomDiamondColorBitmap();
+        while(newColorBitmap.sameAs(currentColorBitmap)){
+            newColorBitmap= this.getRandomDiamondColorBitmap();
+        }
+        this.bitmap = newColorBitmap;
+        return this.bitmap;
+    }
     public void draw(Canvas canvas){
         canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
     }
@@ -49,6 +60,20 @@ public class PlayerDiamond extends Diamond  {
             return false;
         }
     }
+    public boolean aboveBaseline(int eventGetY){
+        if(eventGetY < getBaseStartLine()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    /*private boolean playerDiamondMoved(){
+        int initPlayerLocation;
+        initPlayerLocation = this.getXLocation();
+        if(i)
+    }*/
 
     public void moveLeft(){
         this.setXLocation(this.getXLocation() - this.speed); //speed not set yet
@@ -59,7 +84,7 @@ public class PlayerDiamond extends Diamond  {
     }
 
     public void executeDiamondLaunch(){
-       this.setYLocation(this.getYLocation() - 10);
+       this.setYLocation(this.getYLocation() - launchSpeed);
     }
 
     public Bitmap rotateBitmap(int angle, Bitmap bitmap){
