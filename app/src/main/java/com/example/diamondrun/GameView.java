@@ -19,6 +19,7 @@ import java.util.Random;
 public class GameView extends View {
 
     private Handler handler;
+    private boolean diamondCollectionNotVisible = false;
     private Runnable r;
     private DiamondCollection diamondCollection;
     private PlayerDiamond playerDiamond;
@@ -83,16 +84,17 @@ public class GameView extends View {
     public void draw(Canvas canvas){
         super.draw(canvas);
         handler.postDelayed(r, 1);
-
-        diamondCollection.draw(canvas);
+        if(diamondCollectionNotVisible == false) { //shatter fully animated on collision, next spawn we will set it true
+            diamondCollection.draw(canvas);
+        }
         playerDiamond.draw(canvas);
         for (int i = 0; i < numDiamonds; i++) {
             if(!maxScoresPrinted) {
                 scoreNumsArr[i] = randScore.nextInt(MAX_SCORE);
             }
-
-            canvas.drawText( "" + scoreNumsArr[i] , diamondCollection.getXLocation(i) + (diamondWidth/2), diamondCollection.getYLocation(i) + (diamondHeight/2), paint);
-
+            if(diamondCollectionNotVisible == false) {
+                canvas.drawText("" + scoreNumsArr[i], diamondCollection.getXLocation(i) + (diamondWidth / 2), diamondCollection.getYLocation(i) + (diamondHeight / 2), paint);
+            }
         }
         maxScoresPrinted = true;
     }
@@ -143,6 +145,15 @@ public class GameView extends View {
         }
         handleLaunch();
 
+        if(diamondCollection.idCurrentBitmap == diamondCollection.maxShatterIndex){ //shatter animation fully completed
+            diamondCollectionNotVisible = true;//shatter has been fully animated, set invisible
+            diamondCollection.idCurrentBitmap = 0; //reset the current bitmap
+            diamondCollection.startShatter = false; //stop shatter effect before next spawn
+            diamondCollection.resetYLocation(); //back to top of screen
+            diamondCollectionNotVisible = false; //make visible again
+            diamondCollection.moveDiamondsDownScreen();
+        }
+
     }
 
     @Override
@@ -187,8 +198,8 @@ public class GameView extends View {
         return true;
     }
 
-    private boolean playerStayedInLaunchFor3Seconds(long initLaunchSystemTime, int launchLocation, int playerLocation){
-        if(launchLocation == playerLocation && System.currentTimeMillis()-initLaunchSystemTime > 3000 ){ //3 seconds passed since he held down for launch
+    private boolean playerStayedInLaunchFor1Second(long initLaunchSystemTime, int launchLocation, int playerLocation){
+        if(launchLocation == playerLocation && System.currentTimeMillis()-initLaunchSystemTime > 1000 ){ //3 seconds passed since he held down for launch
             return true;
         }
         else{
@@ -213,7 +224,7 @@ public class GameView extends View {
                 launchSystemTimeAlreadyInitialized = true;
             }
             for(int i = 0; i < numDiamonds; i++) {
-                if(playerStayedInLaunchFor3Seconds(initLaunchSystemTime, launchLocation, playerDiamond.getYLocation())) {
+                if(playerStayedInLaunchFor1Second(initLaunchSystemTime, launchLocation, playerDiamond.getYLocation())) {
                     Toast.makeText(this.getContext(), "ready for launch!", Toast.LENGTH_SHORT).show();
                     launchOccured = true;//is true everytime he launches
                     launchSystemTimeAlreadyInitialized = false; //resetting this initlaunch system time bool

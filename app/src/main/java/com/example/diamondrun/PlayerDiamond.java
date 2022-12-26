@@ -10,6 +10,7 @@ import android.graphics.Rect;
 public class PlayerDiamond extends Diamond  {
     private Rect rect;
     private Bitmap bitmap;
+    private int launchSpeed = 20;
     private int pullDownSpeed = 2;
     private final int baseLine;
     Matrix matrix;
@@ -59,7 +60,7 @@ public class PlayerDiamond extends Diamond  {
     }
 
     public void executeDiamondLaunch(){
-       this.setYLocation(this.getYLocation() - 10);
+       this.setYLocation(this.getYLocation() - launchSpeed);
     }
 
     public Bitmap rotateBitmap(int angle, Bitmap bitmap){
