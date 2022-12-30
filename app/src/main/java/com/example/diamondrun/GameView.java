@@ -15,10 +15,12 @@ import android.view.View;
 import android.os.Handler;
 import android.widget.Toast;
 
+import androidx.core.view.GestureDetectorCompat;
+
 import java.util.LinkedList;
 import java.util.Random;
 
-public class GameView extends View {
+public class GameView extends View implements GestureDetector.OnDoubleTapListener,GestureDetector.OnGestureListener {
 
     private Handler handler;
     private boolean diamondCollectionNotVisible = false;
@@ -39,10 +41,11 @@ public class GameView extends View {
     Rect rect;
     Timer playerPullDownTimer;
     private boolean freezePlayerX = false;
-    private boolean launchOccured = false;
+    private boolean flickOccured = false;
     private int[] randScoreNumsArr;
     Random randScore;
     Paint paint;
+    Paint paintLine;
     private int MAX_SCORE = 20;
     private int launchLocation;
     private long initLaunchSystemTime;
@@ -53,10 +56,15 @@ public class GameView extends View {
     private long firstClickTime;
     int PLAYER_SCORE = 0;
     private boolean playerIsMoving = false;
+    GestureDetector gestureDetector;
+
+    //colors need to be inserted in a stack order or a queue for the double tap
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
         playerPullDownTimer = new Timer();
+        gestureDetector = new GestureDetector(this.getContext(), this);
+        gestureDetector.setOnDoubleTapListener(this);
         rect = new Rect();
         numDiamonds = 5;
         randScore = new Random(System.currentTimeMillis()); //setting the seed
@@ -76,6 +84,9 @@ public class GameView extends View {
         paint.setColor(Color.BLACK);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(Math.round(screenWidth/14f));
+        paintLine = new Paint();
+        paint.setColor(Color.BLACK);
+        paintLine.setStrokeWidth(10);
         diamondWidth = diamondCollection.getGameGrid().getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
         handler = new Handler();
@@ -91,6 +102,7 @@ public class GameView extends View {
     public void draw(Canvas canvas){
         super.draw(canvas);
         handler.postDelayed(r, 1);
+        canvas.drawLine(0,150, screenX,150, paintLine);
         if(diamondCollectionNotVisible == false) { //shatter fully animated on collision, next spawn we will set it true
             diamondCollection.draw(canvas);
         }
@@ -121,14 +133,9 @@ public class GameView extends View {
         randomShakeNum = RandGenerator(-10,10);
         diamondCollection.moveDiamondsDownScreen();
 
-        if(!launchOccured && playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)){
-            this.vibrateForLaunch(); //vibrates diamond before it launches
-        }
+        if(flickOccured){ //only occurs when diamond launched
+            playerDiamond.executeDiamondLaunch(); //launches diamond up until it collides
 
-
-        if(launchOccured){ //only occurs when diamond launched
-            playerDiamond.executeDiamondLaunch();
-            playerDiamond.rotateBitmap(0, playerDiamond.getDiamondBitmap()); //resets diamond matrix angle to 0
         }
 
         if(diamondCollection.diamondCollectionMovedBelowScreen()){ //continue respawning diamonds from top of screen everytime they go below screen
@@ -144,14 +151,13 @@ public class GameView extends View {
                     diamondCollection.createDiamondShatterAnimator(i);
                     PLAYER_SCORE += randScoreNumsArr[i-1]; //updating score with whatever color collision matched
                 }
-                if(launchOccured){ //if launch occurred and collided with diamond, bounce it back to start
+                if(flickOccured){ //if flick occurred and collided with diamond, bounce it back to start
                     playerDiamond.resetYLocation();
-                    launchOccured = false; //resets upon collision and launch
+                    flickOccured = false; //resets upon collision and launch
 
                 }
             }
         }
-        handleLaunch();
 
         if(diamondCollection.idCurrentBitmap == diamondCollection.maxShatterIndex){ //shatter animation fully completed
             diamondCollectionNotVisible = true;//shatter has been fully animated, set invisible
@@ -163,81 +169,6 @@ public class GameView extends View {
             diamondCollection.moveDiamondsDownScreen();
         }
 
-    }
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        gameGrid = diamondCollection.getGameGrid();
-
-        switch (event.getAction()) {
-
-            case MotionEvent.ACTION_DOWN:
-                playerIsMoving = false;
-                clickCount++;
-                if(clickCount == 1) { //only set firstclicktime on first click
-                    firstClickTime = System.currentTimeMillis();
-                }
-                initDownY = (int) event.getY(); //getting initial tap location to know if he swipes down
-                initDownX = (int) event.getX();
-                break;
-
-                    case MotionEvent.ACTION_MOVE:
-                            downX = (int) event.getX();
-                            downY = (int) event.getY();
-                            playerIsMoving = true;
-                        if(motionIsSwipe(initDownX, (int) event.getX()) && !playerDiamond.belowBaseline(playerDiamond.getYLocation())) { //only can move x if hes swiping
-                                if (gameGrid.insideAxis(0, downX)) { //if his finger inside axis 1
-                                    movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
-                                }
-                                if (gameGrid.insideAxis(1, downX)) { //if his finger inside axis 2
-                                    movePlayerDiamondIntoCenterAxis(1); //move him to center of this axis
-                                }
-                                if (gameGrid.insideAxis(2, downX)) { //if his finger inside axis 3
-                                    movePlayerDiamondIntoCenterAxis(2); //move him to center of this axis
-                                }
-                                if (gameGrid.insideAxis(3, downX)) { //if his finger inside axis 4
-                                    movePlayerDiamondIntoCenterAxis(3); //move him to center of this axis
-                                }
-                                if (gameGrid.insideAxis(4, downX)) { //if his finger inside axis 5
-                                    movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
-                                }
-                                if(playerDiamondAboveBaseline(playerDiamond.getRect().top)){
-                                playerDiamond.resetYLocation(); //dont let him swipe above baseline
-                                }
-                            }
-
-                        else { //player diamond moving down for launch
-                            if(motionIsSwipeDown(initDownY, (int) event.getY())){
-                                playerDiamond.moveDownWithFinger(downY); //only can move down if he swipes down screen
-                            }
-                            if (playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)) {
-                                playerDiamond.setYLocation(screenY - playerDiamond.getBitmapHeight());
-                            }
-                            if(playerDiamondAboveBaseline(playerDiamond.getRect().top)){
-                                playerDiamond.resetYLocation(); //dont let him swipe above baseline
-                            }
-                        }
-
-            case MotionEvent.ACTION_UP:
-                playerIsMoving = false;
-                if(clickCount == 2){ //player clicked twice
-                    Toast.makeText(this.getContext(), "click count is two!", Toast.LENGTH_SHORT).show();
-
-                    if((System.currentTimeMillis() - firstClickTime)/1000 < 2) { //two clicks in less than seconds
-                        Toast.makeText(this.getContext(), "two clicks in less than 2 seconds, change color now!", Toast.LENGTH_SHORT).show();
-                        if (!playerIsMoving){
-                            playerDiamond.getChangedColorBitmap();
-                    }
-                        clickCount = 0;
-                    }
-                    else{ //clicked twice but not within 2 seconds
-                        Toast.makeText(this.getContext(), "two clicks not within 2 seconds!", Toast.LENGTH_SHORT).show();
-                        clickCount = 0;
-                    }
-                }
-        }
-        return true;
     }
 
     private boolean playerStayedInLaunchFor1Second(long initLaunchSystemTime, int launchLocation, int playerLocation){
@@ -264,23 +195,6 @@ public class GameView extends View {
         }
         else{
             return false;
-        }
-    }
-
-    private void handleLaunch(){
-        if(playerDiamondReachedScreenBottom(playerDiamond.getRect().bottom)){ //diamond y2 cant pass screen bottom while getting rdy to launch
-            launchLocation = playerDiamond.getYLocation(); // we marking this point where his y is frozen
-            if(!launchSystemTimeAlreadyInitialized) {
-                initLaunchSystemTime = System.currentTimeMillis();
-                launchSystemTimeAlreadyInitialized = true;
-            }
-            for(int i = 0; i < numDiamonds; i++) {
-                if(playerStayedInLaunchFor1Second(initLaunchSystemTime, launchLocation, playerDiamond.getYLocation())) {
-                    Toast.makeText(this.getContext(), "ready for launch!", Toast.LENGTH_SHORT).show();
-                    launchOccured = true;//is true everytime he launches
-                    launchSystemTimeAlreadyInitialized = false; //resetting this initlaunch system time bool
-                }
-            }
         }
     }
 
@@ -313,16 +227,6 @@ public class GameView extends View {
         return Math.abs(var2 - var1);
     }
 
-
-    private boolean fingerPullingDownForLaunch(int eventGetYInit, int eventGetYFinal){
-        if(distance(eventGetYInit, eventGetYFinal) > 100 ){
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
     private boolean playerFingerOnDiamond(int eventGetX, int eventGetY){
         Rect playerDiamondRect = playerDiamond.getRect();
         if(playerDiamondRect.left <= eventGetX && playerDiamondRect.right >= eventGetX
@@ -334,22 +238,93 @@ public class GameView extends View {
         }
     }
 
-    private boolean motionIsSwipe(int x1, int x2) {
-        if(distance(x1,x2) > 100){ //moved finger while down greater than 100 distance across screen
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        gameGrid = diamondCollection.getGameGrid();
+        gestureDetector.onTouchEvent(event);
+        return true;
+    }
+
+    @Override
+    public boolean onSingleTapConfirmed(MotionEvent e) {
+        Toast.makeText(this.getContext(), "onSingleTapConfirmed!", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent e) {
+        playerDiamond.getChangedColorBitmap(); //changes player diamond color to a random color thats not the same
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        Toast.makeText(this.getContext(), "onDown!", Toast.LENGTH_SHORT).show();
+
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        onFingerSlidingLeftOrRight(e2); //moves cleanly across x into correct axis
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    private boolean playerFlickedFingerUp(MotionEvent e1, MotionEvent e2){
+        if(distance((int)e1.getY(), (int)e2.getY()) > 200){ //make universal later
             return true;
         }
         else{
             return false;
         }
     }
-
-    private boolean motionIsSwipeDown(int y1, int y2) {
-        if(distance(y1,y2) > 50){ //moved finger while down greater than 100 distance across screen
-            return true;
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if(playerFlickedFingerUp(e1,e2)) { //ONLY launches when he flicks across y axis
+            flickOccured = true; //starts the launch
         }
-        else{
-            return false;
+        return false;
+    }
+
+    public void onFingerSlidingLeftOrRight(MotionEvent e2) {
+        if (gameGrid.insideAxis(0, (int) e2.getX())) { //if his finger inside axis 1
+            movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
+        }
+        if (gameGrid.insideAxis(1, (int) e2.getX())) { //if his finger inside axis 2
+            movePlayerDiamondIntoCenterAxis(1); //move him to center of this axis
+        }
+        if (gameGrid.insideAxis(2, (int) e2.getX())) { //if his finger inside axis 3
+            movePlayerDiamondIntoCenterAxis(2); //move him to center of this axis
+        }
+        if (gameGrid.insideAxis(3, (int) e2.getX())) { //if his finger inside axis 4
+            movePlayerDiamondIntoCenterAxis(3); //move him to center of this axis
+        }
+        if (gameGrid.insideAxis(4, (int) e2.getX())) { //if his finger inside axis 5
+            movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
         }
     }
 
 }
+
+

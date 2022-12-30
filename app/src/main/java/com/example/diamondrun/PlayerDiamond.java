@@ -4,16 +4,19 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 
 public class PlayerDiamond extends Diamond  {
     private Rect rect;
-    private Bitmap bitmap;
+
     private int launchSpeed = 20;
     private int pullDownSpeed = 2;
     private final int baseLine;
     Matrix matrix;
+    private int playerDiamondColorIndex = -1;
 
     public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
         super (context, bmWidth, bmHeight);
@@ -21,7 +24,9 @@ public class PlayerDiamond extends Diamond  {
         this.setXLocation(screenWidth/2); //centered in screen
         this.setYLocation((screenHeight*4)/5);
         baseLine = this.getYLocation();
-        bitmap = this.getRandomDiamondColorBitmap();
+
+        playerDiamondColorIndex = rand.nextInt(bitmapColorsArr.length);
+        this.bitmap = this.bitmapColorsArr[playerDiamondColorIndex]; //ndomDiamondColorBitmap();
         matrix = new Matrix();
     }
 
@@ -32,14 +37,12 @@ public class PlayerDiamond extends Diamond  {
 
 
     public Bitmap getChangedColorBitmap(){
-        Bitmap currentColorBitmap = this.bitmap;
-        Bitmap newColorBitmap = this.getRandomDiamondColorBitmap();
-        while(newColorBitmap.sameAs(currentColorBitmap)){
-            newColorBitmap= this.getRandomDiamondColorBitmap();
-        }
+        ++playerDiamondColorIndex;
+        Bitmap newColorBitmap = bitmapColorsArr[playerDiamondColorIndex % bitmapColorsArr.length]; //mod to make sure index is always inside array bounds, 0-4 for this array
         this.bitmap = newColorBitmap;
         return this.bitmap;
     }
+
     public void draw(Canvas canvas){
         canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
     }
@@ -79,8 +82,8 @@ public class PlayerDiamond extends Diamond  {
         this.setXLocation(this.getXLocation() - this.speed); //speed not set yet
     }
 
-    public void moveDownWithFinger(int eventGetY){
-        this.setYLocation(eventGetY);
+    public void moveDownWithFinger(MotionEvent e2){ //sets y location to wherever finger is
+        this.setYLocation((int)e2.getY());
     }
 
     public void executeDiamondLaunch(){
