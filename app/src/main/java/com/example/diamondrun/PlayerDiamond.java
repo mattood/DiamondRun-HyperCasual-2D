@@ -36,7 +36,7 @@ public class PlayerDiamond extends Diamond  {
     }
 
 
-    public Bitmap getChangedColorBitmap(){
+    public Bitmap getChangedColorBitmap(){ //ensures that color change occurs in a sequence
         ++playerDiamondColorIndex;
         Bitmap newColorBitmap = bitmapColorsArr[playerDiamondColorIndex % bitmapColorsArr.length]; //mod to make sure index is always inside array bounds, 0-4 for this array
         this.bitmap = newColorBitmap;
@@ -71,12 +71,6 @@ public class PlayerDiamond extends Diamond  {
             return false;
         }
     }
-
-    /*private boolean playerDiamondMoved(){
-        int initPlayerLocation;
-        initPlayerLocation = this.getXLocation();
-        if(i)
-    }*/
 
     public void moveLeft(){
         this.setXLocation(this.getXLocation() - this.speed); //speed not set yet

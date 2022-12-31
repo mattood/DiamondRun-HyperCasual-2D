@@ -46,6 +46,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Random randScore;
     Paint paint;
     Paint paintLine;
+    Paint paintScore;
     private int MAX_SCORE = 20;
     private int launchLocation;
     private long initLaunchSystemTime;
@@ -57,7 +58,8 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     int PLAYER_SCORE = 0;
     private boolean playerIsMoving = false;
     GestureDetector gestureDetector;
-
+    int scorePaintX, scorePaintY;
+    DiamondShard diamondShard;
     //colors need to be inserted in a stack order or a queue for the double tap
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
@@ -69,7 +71,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         numDiamonds = 5;
         randScore = new Random(System.currentTimeMillis()); //setting the seed
         diamondCollection = new DiamondCollection(context, numDiamonds, screenWidth, screenHeight);
-         //gamegrid created here
+
         playerDiamond = new PlayerDiamond
                 (context
                 ,diamondCollection.get_at(0).getBitmapWidth()
@@ -86,9 +88,14 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         paint.setTextSize(Math.round(screenWidth/14f));
         paintLine = new Paint();
         paint.setColor(Color.BLACK);
-        paintLine.setStrokeWidth(10);
+        paintLine.setStrokeWidth(8);
+        paintScore = new Paint();
+        paintScore.setColor(Color.BLACK);
+        paintScore.setTextSize(Math.round(screenWidth/14f));
         diamondWidth = diamondCollection.getGameGrid().getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
+        scorePaintX = (screenX*4)/5;
+        scorePaintY = screenY/18;
         handler = new Handler();
         r = new Runnable() {
             @Override
@@ -102,11 +109,16 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     public void draw(Canvas canvas){
         super.draw(canvas);
         handler.postDelayed(r, 1);
-        canvas.drawLine(0,150, screenX,150, paintLine);
+        canvas.drawLine(0,screenY/14, screenX,screenY/14, paintLine);
+        canvas.drawText(PLAYER_SCORE + " pts", scorePaintX,scorePaintY,paintScore);
         if(diamondCollectionNotVisible == false) { //shatter fully animated on collision, next spawn we will set it true
             diamondCollection.draw(canvas);
         }
         playerDiamond.draw(canvas);
+
+        if(diamondShard!=null) { //only appears upon shatter basically
+            diamondShard.draw(canvas);
+        }
         for (int i = 0; i < numDiamonds; i++) {
             if(!maxScoresPrinted) { //draws a score to each diamond and then stops, we gonna have to reset the false somewhere
                 randScoreNumsArr[i] = randScore.nextInt(MAX_SCORE);
@@ -135,7 +147,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
         if(flickOccured){ //only occurs when diamond launched
             playerDiamond.executeDiamondLaunch(); //launches diamond up until it collides
-
         }
 
         if(diamondCollection.diamondCollectionMovedBelowScreen()){ //continue respawning diamonds from top of screen everytime they go below screen
@@ -149,7 +160,9 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
                 if(diamondCollisionColorsMatched(i)){ //we only check for color match upon collision
                     Toast.makeText(this.getContext(), "two same bitmap colors collided!", Toast.LENGTH_SHORT).show();
                     diamondCollection.createDiamondShatterAnimator(i);
-                    PLAYER_SCORE += randScoreNumsArr[i-1]; //updating score with whatever color collision matched
+                    diamondShard = new DiamondShard(diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), diamondCollection.getBitmapAtIndex(i)); //initializing here
+                    feedScores(2);
+                    PLAYER_SCORE += randScoreNumsArr[i]; //updating score with whatever color collision matched
                 }
                 if(flickOccured){ //if flick occurred and collided with diamond, bounce it back to start
                     playerDiamond.resetYLocation();
@@ -168,6 +181,22 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
             diamondCollectionNotVisible = false; //make visible again
             diamondCollection.moveDiamondsDownScreen();
         }
+
+    }
+
+    private void feedScores(int delta){
+        int velocity = 5; //move speed to target
+        int targetYLocation = scorePaintY;
+        int targetXLocation = scorePaintX;
+        int diamondShardYLocation =diamondShard.getYLocation();
+        int diamondShardXLocation =diamondShard.getXLocation();
+        double theta = Math.atan2(targetYLocation - diamondShardYLocation, targetXLocation - diamondShardXLocation);
+
+        double valX = (delta * velocity) * Math.cos(theta);
+        double valY = (delta * velocity) * Math.sin(theta);
+
+        diamondShard.yLocation += valY;
+        diamondShard.xLocation += valX;
 
     }
 

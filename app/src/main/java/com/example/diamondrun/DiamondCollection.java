@@ -41,6 +41,7 @@ public class DiamondCollection<num> {
     public int maxShatterIndex = shatterRed.length-1;
     public int count, vFlap, idCurrentBitmap;
 
+
     DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
         bitmapWidth = screenWidth / numDiamonds;
         this.numDiamonds = numDiamonds;
@@ -54,6 +55,7 @@ public class DiamondCollection<num> {
         this.vFlap = 5;
         this.idCurrentBitmap = 0;
     }
+
 
     public void initShatterDiamondBitmaps(Context context) {
         //red init

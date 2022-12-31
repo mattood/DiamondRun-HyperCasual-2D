@@ -27,10 +27,11 @@ public class Diamond {
         rand = new Random();
         initBitmapDiamonds(context);
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
-
     }
 
-    public void initBitmapDiamonds(Context context){ //why is it giving context null
+    public void initBitmapDiamonds(Context context){
+
+        //regular sized diamonds
         greenDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.greendiamond);
         greenDiamondBitmap = Bitmap.createScaledBitmap(greenDiamondBitmap, bitmapWidth, bitmapHeight, false);
 
@@ -45,6 +46,7 @@ public class Diamond {
 
         purpleDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamond);
         purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, (bitmapWidth), bitmapHeight, false);
+
     }
 
 
