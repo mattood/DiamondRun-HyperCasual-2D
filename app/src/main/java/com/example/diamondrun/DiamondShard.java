@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
 public class DiamondShard {
     public int yLocation;
@@ -11,30 +12,41 @@ public class DiamondShard {
     public Bitmap bitmap;
     public int bitmapWidth;
     public int bitmapHeight;
+    public boolean visible = true;
+    private Rect rect;
 
     DiamondShard(int xLocation, int yLocation, Bitmap bitmap){
         this.yLocation = yLocation;
         this.xLocation = xLocation;
         this.bitmap = bitmap;
-        bitmapWidth = bitmap.getWidth();
-        bitmapHeight = bitmap.getHeight();
+        bitmapWidth = bitmap.getWidth()/4;
+        bitmapHeight = bitmap.getHeight()/4;
         scaleCurrentBitmap();
     }
 
     public void scaleCurrentBitmap(){ // just scaling it
-       this.bitmap = Bitmap.createScaledBitmap(this.bitmap, bitmapWidth/4, bitmapHeight/4, false);
+       this.bitmap = Bitmap.createScaledBitmap(this.bitmap, bitmapWidth, bitmapHeight, false);
     }
 
-    public int getXLocation(){
-        return this.xLocation;
+    public void setBitmap(Bitmap bitmap){
+        this.bitmap = Bitmap.createScaledBitmap(bitmap, bitmapWidth, bitmapHeight, false);
     }
 
-    public int getYLocation(){
-        return this.yLocation;
+    public Rect getRect(){
+        rect = new Rect(this.xLocation, this.yLocation, this.xLocation+this.bitmapWidth, this.yLocation+this.bitmapHeight);
+        return rect;
+    }
+
+    public void setVisible(boolean visible){
+        this.visible = visible;
     }
 
     public void draw(Canvas canvas){
-        canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
+        if (visible) {
+            canvas.drawBitmap(bitmap, xLocation, yLocation, null);
+        }
+
     }
+
 
 }
