@@ -22,6 +22,7 @@ public class Diamond {
     public Bitmap purpleDiamondBlinkBitmap;
     public Bitmap yellowDiamondBlinkBitmap;
     public Bitmap redDiamondBlinkBitmap;
+    public Bitmap transparentdiamond;
     Bitmap[] bitmapColorsArr;
     Random rand;
     protected Bitmap bitmap;
@@ -57,7 +58,7 @@ public class Diamond {
         redDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.reddiamondblink);
         yellowDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.yellowdiamondblink);
         purpleDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamondblink);
-
+        transparentdiamond = greenDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.transparentdiamond);
     }
 
 

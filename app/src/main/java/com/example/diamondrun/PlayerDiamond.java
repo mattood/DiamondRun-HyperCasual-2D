@@ -21,7 +21,7 @@ public class PlayerDiamond extends Diamond  {
     public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
         super (context, bmWidth, bmHeight);
 
-        this.setXLocation(screenWidth/2); //centered in screen
+        this.setXLocation(screenWidth/2 - bmWidth/2); //centered in screen
         this.setYLocation((screenHeight*4)/5);
         baseLine = this.getYLocation();
 

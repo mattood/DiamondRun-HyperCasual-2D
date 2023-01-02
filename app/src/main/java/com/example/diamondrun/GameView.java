@@ -25,7 +25,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
     private Handler handler;
     int xMiddleOfScoreXAndScreenX;
-    int yMiddleOfScoreYAndScreenY;
+
     private long currentTime = System.currentTimeMillis();
     private boolean feedScores = false;
     private boolean diamondCollectionNotVisible = false;
@@ -36,13 +36,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     private boolean maxScoresPrinted = false;
     private int screenX, screenY;
     private GameGrid gameGrid;
-    private boolean initActionDown = false;
-    private int initDownY;
-    private int initDownX;
-    private int downX;
-    private int downY;
-    private int upX;
-    private boolean launchSystemTimeAlreadyInitialized = false;
     Rect rect;
     Timer playerPullDownTimer;
     private boolean freezePlayerX = false;
@@ -53,8 +46,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Paint paintLine;
     Paint paintScore;
     private int MAX_SCORE = 20;
-    private int launchLocation;
-    private long initLaunchSystemTime;
     private int diamondWidth;
     private int diamondHeight;
     private int randomShakeNum;
@@ -68,7 +59,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     DiamondShard scoreKeeperShard;
     public ArrayList<DiamondShard> arrDiamondShards = new ArrayList<>();
     int initShardIndex = 0;
-    Bitmap tempScoreShardTransparent;
+    Bitmap bitmapShardTransparent;
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
@@ -103,9 +94,9 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         diamondHeight = playerDiamond.getBitmapHeight();
         scorePaintX = (screenX*2)/3;
         xMiddleOfScoreXAndScreenX = (screenX + scorePaintX)/2;
-
         scorePaintY = screenY/18;
-        scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, playerDiamond.blueDiamondBitmap); //bitmap will be changed
+        bitmapShardTransparent = playerDiamond.transparentdiamond;
+        scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, bitmapShardTransparent); //bitmap will be changed
         handler = new Handler();
         r = new Runnable() {
             @Override
@@ -158,22 +149,23 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         return num;
     }
 
-
     public void update(){
         diamondCollection.moveDiamondsDownScreen();
 
         if(feedScores){
             feedScores();
-            if(System.currentTimeMillis() - currentTime > 250){  //every shard move sequentially
+            if(System.currentTimeMillis() - currentTime > 63){  //every shard move sequentially
                 initShardIndex++;
                 currentTime = System.currentTimeMillis(); //current time gets updated every index
             }
             for(int i = 0; i < arrDiamondShards.size(); i++){
                 if(Rect.intersects(arrDiamondShards.get(i).getRect(), scoreKeeperShard.getRect())){
                     arrDiamondShards.get(i).setVisible(false); //shards invisible after collide with scoreshard
-                    arrDiamondShards.remove(i);
+                    PLAYER_SCORE+=1; //every time shard collides it increments
+                    arrDiamondShards.remove(i); //delete each element after collides, gets picked up by garbage collector
                     if(arrDiamondShards.isEmpty()){
-                        feedScores = false;
+                        scoreKeeperShard.setBitmap(bitmapShardTransparent);
+                        feedScores = false; //reset the feedscores boolean when arraylist is empty
                         initShardIndex = 0;
                     }
                 }
@@ -197,9 +189,9 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
                     Toast.makeText(this.getContext(), "two same bitmap colors collided!", Toast.LENGTH_SHORT).show();
                     diamondCollection.createDiamondShatterAnimator(i);
                     scoreKeeperShard.setBitmap(diamondCollection.getBitmapAtIndex(i)); //score shard becomes color of shatter index
-                    createArrayOfThisShard(randScoreNumsArr[i], diamondCollection.getXLocation(i), diamondCollection.getYLocation(i), i);
+                    createArrayOfThisShard(randScoreNumsArr[i], diamondCollection.getCenterXLocation(i), diamondCollection.getYLocation(i), i);
                     feedScores = true; //starts feeding now
-                    PLAYER_SCORE += randScoreNumsArr[i]; //updating score with whatever color collision matched
+                    //PLAYER_SCORE += randScoreNumsArr[i]; //updating score with whatever color collision matched
                 }
                 if(flickOccured){ //if flick occurred and collided with diamond, bounce it back to start
                     playerDiamond.resetYLocation();
@@ -247,9 +239,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     }
 
     private void feedScores(){
-
-        int feedSpeed = 10;
-
+        int feedSpeed = 30;
 
         int numIterations = initShardIndex;
 
@@ -265,25 +255,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
             double angle = Math.atan2(deltaY, deltaX);
             arrDiamondShards.get(i).yLocation -= feedSpeed * Math.sin(angle);
             arrDiamondShards.get(i).xLocation += feedSpeed * Math.cos(angle);
-        }
-
-    }
-
-    private boolean playerStayedInLaunchFor1Second(long initLaunchSystemTime, int launchLocation, int playerLocation){
-        if(launchLocation == playerLocation && System.currentTimeMillis()-initLaunchSystemTime > 1000 ){ //3 seconds passed since he held down for launch
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    private boolean playerDiamondReachedScreenBottom(int playerDiamondY2){
-        if(playerDiamondY2 >= screenY){
-            return true;
-        }
-        else{
-            return false;
         }
     }
 

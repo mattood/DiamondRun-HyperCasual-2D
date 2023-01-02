@@ -251,6 +251,13 @@ public class DiamondCollection<num> {
         return get_at(index).getXLocation();
     }
 
+    public int getCenterXLocation(int index){
+        int rightX = get_at(index).getXLocation() + this.bitmapWidth;
+        return (get_at(index).getXLocation() + rightX) / 2;
+    }
+
+
+
     public void spawnDiamonds(Context context, int numDiamonds) {
         for (int i = 0; i < numDiamonds; i++) { //we setting the size of entire collection here where they are created
             Diamond d = new Diamond(context, bitmapWidth, bitmapHeight);
