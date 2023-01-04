@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.LinkedList;
 public class DiamondCollection<num> {
     //collection of Diamond object / connectors
     private LinkedList<Diamond> diamonds;
+    Paint paint;
     private int diamondCollectionYSpeed = 3;
     public boolean initResetBitmapsColors = false;
     GameGrid gameGrid;
@@ -38,9 +41,9 @@ public class DiamondCollection<num> {
     public ArrayList<Bitmap> arrPurpleBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrYellowBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrBlueBitmaps = new ArrayList<>();
+    public ArrayList<Integer> diamondScoreArr;
     public int maxShatterIndex = shatterRed.length-1;
     public int count, vFlap, idCurrentBitmap;
-
 
     DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
         bitmapWidth = screenWidth / numDiamonds;
@@ -51,12 +54,25 @@ public class DiamondCollection<num> {
         bitmaps = new LinkedList<Bitmap>();
         initShatterDiamondBitmaps(context);
         spawnDiamonds(context, numDiamonds);
+        diamondScoreArr = new ArrayList<>(numDiamonds);
+        initDiamondScoresArr();
+        paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(Math.round(screenWidth/14f));
+        paint.setColor(Color.BLACK);
         this.count = 0;
         this.vFlap = 5;
         this.idCurrentBitmap = 0;
+
+
     }
 
-
+    public void initDiamondScoresArr(){
+        for(int i = 0; i < numDiamonds;i++){
+            diamondScoreArr.add(diamonds.get(i).diamondScore);
+        }
+    }
     public void initShatterDiamondBitmaps(Context context) {
         //red init
         shatterRed[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt1), bitmapWidth, bitmapHeight, true);
@@ -256,7 +272,13 @@ public class DiamondCollection<num> {
         return (get_at(index).getXLocation() + rightX) / 2;
     }
 
-
+    public void evaluateMultiplierActive(Boolean multiplierActive){
+        if(multiplierActive) {
+            for (int i = 0; i < diamonds.size(); i++) {
+                diamonds.get(i).multiplier = 1;
+            }
+        }
+    }
 
     public void spawnDiamonds(Context context, int numDiamonds) {
         for (int i = 0; i < numDiamonds; i++) { //we setting the size of entire collection here where they are created
@@ -387,6 +409,12 @@ public class DiamondCollection<num> {
                     bitmaps.add(this.bitmap); // adding each new bitmap to linked list
                 }
                 canvas.drawBitmap(bitmaps.get(i), d.getXLocation(), d.getYLocation(), null);
+                if(d.hasMultiplier()){ //it has a multiplier
+                    canvas.drawText("x" + d.multiplier, d.getXLocation() + (d.getBitmapWidth() / 2), d.getYLocation() + (d.getBitmapHeight() / 2), paint);
+                }
+                else {//if its 1 its not a multiplier
+                    canvas.drawText("" + diamondScoreArr.get(i), d.getXLocation() + (d.getBitmapWidth() / 2), d.getYLocation() + (d.getBitmapHeight() / 2), paint);
+                }
             }
         }
     }

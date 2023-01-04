@@ -26,14 +26,28 @@ public class Diamond {
     Bitmap[] bitmapColorsArr;
     Random rand;
     protected Bitmap bitmap;
+    Random randNum;
+    public int multiplier = 1;
+    private boolean multiplierActive = false;
+    public int MAX_SCORE = 20;
+    public int diamondScore;
+    Random randScore;
 
     Diamond(Context context, int bmWidth, int bmHeight){
         bitmapWidth = bmWidth;
         bitmapHeight = bmHeight;
         rand = new Random();
+        randScore = new Random(System.currentTimeMillis());
         initBitmapDiamonds(context);
+        diamondScore = randScore.nextInt(20); //random score for each diamond 0-20
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
+        randNum = new Random(System.currentTimeMillis());
+        if(randNum.nextInt(3) == 1){ //probability of occurring
+            multiplier = rand.nextInt(2)+2;
+        }
     }
+
+
 
     public void initBitmapDiamonds(Context context){
 
@@ -61,7 +75,14 @@ public class Diamond {
         transparentdiamond = greenDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.transparentdiamond);
     }
 
-
+    public boolean hasMultiplier(){
+        if(multiplier!=1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
     public Bitmap getRandomDiamondColorBitmap(){
         bitmap= bitmapColorsArr[rand.nextInt(bitmapColorsArr.length)];
         return bitmap; //random bitmap color
