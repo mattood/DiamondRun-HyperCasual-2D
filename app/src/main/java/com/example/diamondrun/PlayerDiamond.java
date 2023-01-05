@@ -25,7 +25,7 @@ public class PlayerDiamond extends Diamond  {
         this.setYLocation((screenHeight*4)/5);
         baseLine = this.getYLocation();
 
-        playerDiamondColorIndex = rand.nextInt(bitmapColorsArr.length);
+        playerDiamondColorIndex = randNum.nextInt(bitmapColorsArr.length);
         this.bitmap = this.bitmapColorsArr[playerDiamondColorIndex]; //ndomDiamondColorBitmap();
         matrix = new Matrix();
     }

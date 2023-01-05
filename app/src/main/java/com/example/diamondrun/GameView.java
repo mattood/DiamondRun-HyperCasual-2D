@@ -24,6 +24,8 @@ import java.util.Random;
 public class GameView extends View implements GestureDetector.OnDoubleTapListener,GestureDetector.OnGestureListener {
 
     private Handler handler;
+    int diamondScore;
+    int gameTimerX;
     public boolean multiplierIsActive = false;
     int xMiddleOfScoreXAndScreenX;
     private long currentTime = System.currentTimeMillis();
@@ -46,7 +48,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     private int CURR_MULTIPLIER = 1;
     Random randScore;
     Random randMultiplierScore;
-    Paint paint;
+    int multiplierTimeX;
     Paint paintAcrossXLine1;
     Paint paintAcrossXLine2;
     Paint paintAcrossYLine;
@@ -66,11 +68,13 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Bitmap scoreKeeperShardBitmapColor;
     private boolean initScoreKeeperXFor2Digits = false;
     MyTimer MultiplierTimer;
+    MyTimer GameTimer;
     int multiplierTimerSeconds;
 
     public GameView(Context context, int screenWidth, int screenHeight)  {
         super(context);
-        MultiplierTimer = new MyTimer();
+        MultiplierTimer = new MyTimer(10);
+        GameTimer = new MyTimer(300);
         gestureDetector = new GestureDetector(this.getContext(), this);
         gestureDetector.setOnDoubleTapListener(this);
         rect = new Rect();
@@ -103,14 +107,18 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         paintMultiplier = new Paint();
         paintMultiplier.setColor(Color.BLACK);
         paintMultiplier.setTextSize(Math.round(screenWidth/14f));
-        paintMultiplierX = paintAcrossXLine1X/4;
+        paintMultiplier.setTextAlign(Paint.Align.CENTER);
+        paintMultiplierX = paintAcrossXLine1X/2;
+        multiplierTimeX = (paintAcrossXLine1X+paintAcrossXLine2X)/2 ;
         diamondWidth = diamondCollection.getGameGrid().getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
         scorePaintX = (screenX*2)/3;
         xMiddleOfScoreXAndScreenX = (screenX + scorePaintX)/2;
         scorePaintY = screenY/18;
+        gameTimerX = (paintAcrossXLine2X + screenX) / 2;
         bitmapShardTransparent = playerDiamond.transparentdiamond;
         scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, bitmapShardTransparent); //bitmap will be changed
+        GameTimer.startTimer();
         handler = new Handler();
         r = new Runnable() {
             @Override
@@ -129,7 +137,8 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         canvas.drawLine(paintAcrossXLine2X, screenY/14, paintAcrossXLine2X, 0, paintAcrossXLine2);
         canvas.drawText(PLAYER_SCORE + " pts", scorePaintX,scorePaintY,paintScore);
         canvas.drawText("X " + CURR_MULTIPLIER, paintMultiplierX, scorePaintY, paintMultiplier); //shows multiplier active
-        canvas.drawText(":" + multiplierTimerSeconds, paintMultiplierX+150, scorePaintY, paintMultiplier); //fix values
+        canvas.drawText(": " + multiplierTimerSeconds, multiplierTimeX, scorePaintY, paintMultiplier); //fix values
+        canvas.drawText("" + GameTimer.formatTime(GameTimer.getTimerSeconds(), GameTimer.getTimerMinutes()), screenX/2, scorePaintY, paintMultiplier); //fix values
 
         if(diamondCollectionNotVisible == false) { //shatter fully animated on collision, next spawn we will set it true
             diamondCollection.draw(canvas);
@@ -163,20 +172,20 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     public void update(){
         updateScoreShardXLocation();
         diamondCollection.moveDiamondsDownScreen();
-
-        diamondCollection.evaluateMultiplierActive(multiplierIsActive); //checks this boolean constantly
+        diamondCollection.evaluateMultiplierActive(multiplierIsActive); ////setting all diamond multiplier to one so its inactive until timer up
 
         if(multiplierIsActive){
             multiplierTimerSeconds = MultiplierTimer.getTimerSeconds();
-            if(multiplierTimerSeconds >= 10){
+            if(multiplierTimerSeconds == 0){
                 multiplierIsActive = false; //10 seconds passed so turn multiplier off
+                MultiplierTimer.resetTimer();
             }
         }
 
         if(feedScores){
             feedScores();
             if(System.currentTimeMillis() - currentTime > 63){  //every shard move sequentially
-                initShardIndex++;
+                initShardIndex++; //spawning next shard
                 currentTime = System.currentTimeMillis(); //current time gets updated every index
             }
             for(int i = 0; i < arrDiamondShards.size(); i++){
@@ -214,9 +223,14 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
                         MultiplierTimer.startTimer();
                     }
                     else { //collided with diamond that doesnt have multiplier
-                        createArrayOfThisShard(diamondCollection.get_at(i).diamondScore, diamondCollection.getCenterXLocation(i), diamondCollection.getYLocation(i), i);
+                        diamondScore = diamondCollection.get_at(i).diamondScore;
+                        if(multiplierIsActive){
+                            diamondScore*=CURR_MULTIPLIER;
+                        }
+                        createArrayOfThisShard(diamondScore, diamondCollection.getCenterXLocation(i), diamondCollection.getYLocation(i), i);
+                        feedScores = true; //starts feeding now
                     }
-                    feedScores = true; //starts feeding now
+
                 }
                 if(flickOccured){ //if flick occurred and collided with diamond, bounce it back to start
                     playerDiamond.resetYLocation();
@@ -232,6 +246,8 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
             diamondCollection.startShatter = false; //stop shatter effect before next spawn
             diamondCollection.resetYLocation(); //back to top of screen
             diamondCollection.initResetBitmapsColors = false; //animation has completed so reset collection random colors
+            diamondCollection.resetDiamondScoresArr(); //resetting scores after shatter
+            diamondCollection.resetDiamondMultiplier(); //resetting multiplier after shatter
             diamondCollectionNotVisible = false; //make visible again
             diamondCollection.moveDiamondsDownScreen();
         }
@@ -244,24 +260,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         }
     }
 
-    private void blinkScoreShard(Bitmap bitmap){
-        if(bitmap.sameAs(playerDiamond.redDiamondBitmap)){
-            scoreKeeperShard.setBitmap(playerDiamond.redDiamondBlinkBitmap);
-        }
-        else if(bitmap.sameAs(playerDiamond.blueDiamondBitmap)){
-            scoreKeeperShard.setBitmap(playerDiamond.blueDiamondBlinkBitmap);
-        }
-        else if(bitmap.sameAs(playerDiamond.purpleDiamondBitmap)){
-            scoreKeeperShard.setBitmap(playerDiamond.purpleDiamondBlinkBitmap);
-        }
-        else if(bitmap.sameAs(playerDiamond.greenDiamondBitmap)){
-            scoreKeeperShard.setBitmap(playerDiamond.greenDiamondBlinkBitmap);
-        }
-        else if(bitmap.sameAs(playerDiamond.yellowDiamondBitmap)){
-            scoreKeeperShard.setBitmap(playerDiamond.yellowDiamondBlinkBitmap);
-        }
-    }
-
     private void feedScores(){
         int feedSpeed = 30;
 
@@ -271,14 +269,24 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
             numIterations = arrDiamondShards.size(); //prevents from going over
         }
 
+
         for(int i = 0; i < numIterations; i++){
             int diamondShardYLocation = arrDiamondShards.get(i).yLocation;
             int diamondShardXLocation = arrDiamondShards.get(i).xLocation;
-            int deltaX = Math.abs(scoreKeeperShard.xLocation-diamondShardXLocation); //target dest - start location
-            int deltaY = Math.abs(scoreKeeperShard.yLocation-diamondShardYLocation); //target dest - start location
-            double angle = Math.atan2(deltaY, deltaX);
-            arrDiamondShards.get(i).yLocation -= feedSpeed * Math.sin(angle); //works for all except last diamond index
-            arrDiamondShards.get(i).xLocation += feedSpeed * Math.cos(angle);
+            if(!gameGrid.insideAxis(4, playerDiamond.getXLocation())) { //any index except the last one
+                int deltaX = Math.abs(scoreKeeperShard.xLocation - diamondShardXLocation); //target dest - start location
+                int deltaY = Math.abs(scoreKeeperShard.yLocation - diamondShardYLocation); //target dest - start location
+                double angle = Math.atan2(deltaY, deltaX);
+                arrDiamondShards.get(i).yLocation -= feedSpeed * Math.sin(angle); //works for all except last diamond index
+                arrDiamondShards.get(i).xLocation += feedSpeed * Math.cos(angle);
+            }
+            else{ //for last index
+                int deltaX = Math.abs(scoreKeeperShard.xLocation - diamondShardXLocation); //target dest - start location
+                int deltaY = Math.abs(scoreKeeperShard.yLocation + diamondShardYLocation); //target dest - start location
+                double angle = Math.atan2(deltaY, deltaX);
+                arrDiamondShards.get(i).yLocation -= feedSpeed * Math.sin(angle); //works for all except last diamond index
+                arrDiamondShards.get(i).xLocation -= feedSpeed * Math.cos(angle);
+            }
         }
     }
 

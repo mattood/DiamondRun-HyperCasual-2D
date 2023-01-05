@@ -73,6 +73,13 @@ public class DiamondCollection<num> {
             diamondScoreArr.add(diamonds.get(i).diamondScore);
         }
     }
+
+    public void resetDiamondScoresArr(){
+        diamondScoreArr.clear(); //clearing old array
+        for(int i = 0; i < numDiamonds;i++){ //adding new scores
+            diamondScoreArr.add(diamonds.get(i).getRandDiamondScore());
+        }
+    }
     public void initShatterDiamondBitmaps(Context context) {
         //red init
         shatterRed[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt1), bitmapWidth, bitmapHeight, true);
@@ -275,7 +282,7 @@ public class DiamondCollection<num> {
     public void evaluateMultiplierActive(Boolean multiplierActive){
         if(multiplierActive) {
             for (int i = 0; i < diamonds.size(); i++) {
-                diamonds.get(i).multiplier = 1;
+                diamonds.get(i).multiplier = 1; //setting all diamond multiplier to one so its inactive until timer up
             }
         }
     }
@@ -287,6 +294,12 @@ public class DiamondCollection<num> {
             diamonds.add(d);
         }
         setXLocation();
+    }
+
+    public void resetDiamondMultiplier() {
+        for (int i = 0; i < diamonds.size(); i++) { //going through entire linked list
+            diamonds.get(i).resetMultiplier();
+        }
     }
 
     public void moveDiamondsDownScreen() {

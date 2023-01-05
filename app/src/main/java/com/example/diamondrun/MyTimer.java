@@ -5,14 +5,18 @@ import java.util.TimerTask;
 public class MyTimer {
     Timer timer = new Timer();
     TimerTask timerTask;
-    int time = 0;
+    int time;
+
+    public MyTimer(int time){
+        this.time = time;
+    }
 
     public void startTimer(){
         timerTask = new TimerTask()
         {
             @Override
             public void run(){
-                time++;
+                time--;
             }
         };
         timer.scheduleAtFixedRate(timerTask, 0, 1000);
@@ -20,9 +24,20 @@ public class MyTimer {
 
     public int getTimerSeconds(){
         int rounded = (int) Math.round(time);
-        int seconds = ((rounded % 86400) % 3600) % 5000;
+        int seconds = ((rounded % 86400) % 3600) % 60;
         return seconds;
     }
+
+    public int getTimerMinutes(){
+        int rounded = (int) Math.round(time);
+        int minutes = ((rounded % 86400) % 3600) /60;
+        return minutes;
+    }
+
+    public String formatTime(int seconds, int minutes){
+        return String.format(""+minutes) + ":" + String.format("%02d", seconds);
+    }
+
 
     public void stopTimer(){
         if(timer!=null){
@@ -34,7 +49,7 @@ public class MyTimer {
     public void resetTimer(){
         if(timerTask!= null){
             timerTask.cancel();
-            time = 0;
+            //time = 10;
         }
     }
 
