@@ -24,7 +24,9 @@ import java.util.Random;
 public class GameView extends View implements GestureDetector.OnDoubleTapListener,GestureDetector.OnGestureListener {
 
     private Handler handler;
+    private boolean initStartBackgroundLocation1, initStartBackgroundLocation2 = false;
     int diamondScore;
+    Background background1, background2;
     int gameTimerX;
     public boolean multiplierIsActive = false;
     int xMiddleOfScoreXAndScreenX;
@@ -54,6 +56,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Paint paintAcrossYLine;
     Paint paintScore;
     Paint paintMultiplier;
+    Paint paintMultiplierSeconds;
     private int diamondWidth;
     private int diamondHeight;
     int PLAYER_SCORE = 0;
@@ -92,24 +95,27 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
         screenX = screenWidth;
         screenY = screenHeight;
-        //randScoreNumsArr = new int[numDiamonds];
         paintAcrossXLine1 = new Paint();
+        paintAcrossXLine1.setColor(Color.WHITE);
         paintAcrossXLine1.setStrokeWidth(8);
         paintAcrossXLine2 = new Paint();
+        paintAcrossXLine2.setColor(Color.WHITE);
         paintAcrossXLine2.setStrokeWidth(8);
         paintAcrossXLine1X = screenX/6;
         paintAcrossXLine2X = screenX/3;
         paintAcrossYLine = new Paint();
+        paintAcrossYLine.setColor(Color.WHITE);
         paintAcrossYLine.setStrokeWidth(8);
         paintScore = new Paint();
-        paintScore.setColor(Color.BLACK);
+        paintScore.setColor(Color.WHITE);
         paintScore.setTextSize(Math.round(screenWidth/14f));
         paintMultiplier = new Paint();
-        paintMultiplier.setColor(Color.BLACK);
+        paintMultiplier.setColor(Color.WHITE);
         paintMultiplier.setTextSize(Math.round(screenWidth/14f));
         paintMultiplier.setTextAlign(Paint.Align.CENTER);
         paintMultiplierX = paintAcrossXLine1X/2;
         multiplierTimeX = (paintAcrossXLine1X+paintAcrossXLine2X)/2 ;
+        paintMultiplierSeconds = new Paint(); //multiplier timer paint
         diamondWidth = diamondCollection.getGameGrid().getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
         scorePaintX = (screenX*2)/3;
@@ -119,6 +125,10 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         bitmapShardTransparent = playerDiamond.transparentdiamond;
         scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, bitmapShardTransparent); //bitmap will be changed
         GameTimer.startTimer();
+        background1 = new Background(screenX, screenY, context);
+        background2 = new Background(screenX, screenY, context);
+        background2.y = -screenY; //
+        background1.y = 0;
         handler = new Handler();
         r = new Runnable() {
             @Override
@@ -132,6 +142,8 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     public void draw(Canvas canvas){
         super.draw(canvas);
         handler.postDelayed(r, 1);
+        background1.draw(canvas);
+        background2.draw(canvas);
         canvas.drawLine(0,screenY/14, screenX,screenY/14, paintAcrossYLine);
         canvas.drawLine(paintAcrossXLine1X, screenY/14, paintAcrossXLine1X, 0, paintAcrossXLine1);
         canvas.drawLine(paintAcrossXLine2X, screenY/14, paintAcrossXLine2X, 0, paintAcrossXLine2);
@@ -169,7 +181,29 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         }
     }
 
+    public void backgroundLocationHandler(){
+        int background2Y2 = background2.y +background2.getBackgroundHeight(); //rect bottom
+        int background1Y2 = background1.y +background1.getBackgroundHeight(); //rect bottom
+
+        background1.y+=1;
+        background2.y+=1;
+
+        if(background1.y >= screenY) { //top of background1 passes bottom of screen
+            background1.y = -screenY;
+        }
+
+        if(background2.y >= screenY ){ //top of background1 passes bottom of screen
+            background2.y = -screenY;
+
+        }
+
+
+
+    }
+
     public void update(){
+        backgroundLocationHandler();
+
         updateScoreShardXLocation();
         diamondCollection.moveDiamondsDownScreen();
         diamondCollection.evaluateMultiplierActive(multiplierIsActive); ////setting all diamond multiplier to one so its inactive until timer up
