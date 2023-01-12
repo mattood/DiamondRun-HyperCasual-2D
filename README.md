@@ -14,3 +14,5 @@ In progress 2D hypercasual game, brainstorm ideas below(1st image).
 
 ![diamond_run_pic_3](https://user-images.githubusercontent.com/114957404/211162702-c751f81b-e2e8-4696-a1be-a4075f559395.png)
 
+
+![diamond_run_pic_4](https://user-images.githubusercontent.com/114957404/211997786-addb61e7-d458-4023-9cc9-4b6a60632262.png)
