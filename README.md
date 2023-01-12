@@ -2,7 +2,7 @@
 
 
 
-In progress 2D hypercasual game, brainstorm ideas below(1st image). Points are represented incrementally as diamond shards which shoot up into the top score keeper shard based upon the number of points matched with.
+In progress 2D hypercasual game, brainstorm ideas below(1st image). Points are represented incrementally as diamond shards which shoot up into the top score keeper shard based upon the number of points matched with. Upon a shatter a new row of diamonds is spawned and the player diamond resets back to baseline.
 
 # User controls: 1) double tap screen to change player diamond color, 2) horizontal dragging movement across the 5 axis which are passed in and adjusted based on given screen width, 3) flick finger up inside desired axis to project diamond vertically.
 # Objective: To shatter a row of diamonds by matching colors and achieve the maximum amount of points possible with quick eye coordiation and mathematics within the time limit.
