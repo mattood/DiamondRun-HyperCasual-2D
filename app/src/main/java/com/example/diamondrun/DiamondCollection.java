@@ -1,12 +1,19 @@
 package com.example.diamondrun;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,6 +21,8 @@ import java.util.LinkedList;
 public class DiamondCollection<num> {
     //collection of Diamond object / connectors
     private LinkedList<Diamond> diamonds;
+    private long lastFrameChangeTime = 0;
+    private int frameLengthInMillisecond = 25;
     Paint paint;
     private int diamondCollectionYSpeed = 3;
     public boolean initResetBitmapsColors = false;
@@ -26,33 +35,39 @@ public class DiamondCollection<num> {
     private int numDiamonds;
     private int bitmapHeight = 250;
     private int collectionYLocation;
-    private boolean initDiamondBitmap = true;
     private boolean initGreenDiamonds, initRedDiamonds, initPurpleDiamonds, initYellowDiamonds, initBlueDiamonds = false;
     private Rect rect;
     private Bitmap bitmap;
-    private Bitmap[] shatterRed = new Bitmap[26];
-    private Bitmap[] shatterGreen = new Bitmap[26];
-    private Bitmap[] shatterPurple = new Bitmap[26];
-    private Bitmap[] shatterYellow = new Bitmap[26];
-    private Bitmap[] shatterBlue = new Bitmap[26];
+    private int redDiamondShatterFramesNum = 28;
+    private Bitmap[] shatterRed = new Bitmap[redDiamondShatterFramesNum];
+    private Bitmap[] shatterGreen = new Bitmap[redDiamondShatterFramesNum];
+    private Bitmap[] shatterPurple = new Bitmap[redDiamondShatterFramesNum];
+    private Bitmap[] shatterYellow = new Bitmap[redDiamondShatterFramesNum];
+    private Bitmap[] shatterBlue = new Bitmap[redDiamondShatterFramesNum];
     public boolean startShatter = false;
     public ArrayList<Bitmap> arrGreenBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrRedBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrPurpleBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrYellowBitmaps = new ArrayList<>();
     public ArrayList<Bitmap> arrBlueBitmaps = new ArrayList<>();
+    public ArrayList<Integer> redShatterResourceIdsArr, greenShatterResourceIdsArr, blueShatterResourceIdsArr, yellowShatterResourceIdsArr, purpleShatterResourceIdsArr;
     public ArrayList<Integer> diamondScoreArr;
     public int maxShatterIndex = shatterRed.length-1;
-    public int count, vFlap, idCurrentBitmap;
+    public int count, animationIncrementDelay, idCurrentBitmap;
 
     DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
+        redShatterResourceIdsArr = new ArrayList<>();
+        greenShatterResourceIdsArr = new ArrayList<>();
+        blueShatterResourceIdsArr = new ArrayList<>();
+        purpleShatterResourceIdsArr = new ArrayList<>();
+        yellowShatterResourceIdsArr = new ArrayList<>();
         bitmapWidth = screenWidth / numDiamonds;
         this.numDiamonds = numDiamonds;
         bottomOfScreen = screenHeight;
         gameGrid = new GameGrid(numDiamonds, screenWidth);
         diamonds = new LinkedList<Diamond>();//initializing DiamondCollection
         bitmaps = new LinkedList<Bitmap>();
-        initShatterDiamondBitmaps(context);
+
         spawnDiamonds(context, numDiamonds);
         diamondScoreArr = new ArrayList<>(numDiamonds);
         initDiamondScoresArr();
@@ -61,11 +76,11 @@ public class DiamondCollection<num> {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(Math.round(screenWidth/14f));
         paint.setColor(Color.BLACK);
+        retrieveFolderResourceIds(context);
+        initShatterDiamondBitmaps(context);
         this.count = 0;
-        this.vFlap = 5;
+        this.animationIncrementDelay = 5;
         this.idCurrentBitmap = 0;
-
-
     }
 
     public void initDiamondScoresArr(){
@@ -80,148 +95,71 @@ public class DiamondCollection<num> {
             diamondScoreArr.add(diamonds.get(i).getRandDiamondScore());
         }
     }
+
+    public void retrieveFolderResourceIds(Context context){
+
+        for(int i = 1; i <= redDiamondShatterFramesNum; i++){
+            redShatterResourceIdsArr.add(context.getResources().getIdentifier("reddiamondshatteringpt" + i, "drawable", context.getPackageName()));
+        }
+
+        for(int i = 1; i <= redDiamondShatterFramesNum; i++){
+            greenShatterResourceIdsArr.add(context.getResources().getIdentifier("greendiamondshatteringpt"+i, "drawable", context.getPackageName()));
+        }
+        for(int i = 1; i <= redDiamondShatterFramesNum; i++){
+            yellowShatterResourceIdsArr.add(context.getResources().getIdentifier("yellowdiamondshatteringpt"+i, "drawable", context.getPackageName()));
+        }
+        for(int i = 1; i <= redDiamondShatterFramesNum; i++){
+            blueShatterResourceIdsArr.add(context.getResources().getIdentifier("bluediamondshatteringpt"+i, "drawable", context.getPackageName()));
+        }
+        for(int i = 1; i <= redDiamondShatterFramesNum; i++){
+            purpleShatterResourceIdsArr.add(context.getResources().getIdentifier("purplediamondshatteringpt"+i, "drawable", context.getPackageName()));
+        }
+    }
+
     public void initShatterDiamondBitmaps(Context context) {
-        //red init
-        shatterRed[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt1), bitmapWidth, bitmapHeight, true);
-        shatterRed[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt2), bitmapWidth, bitmapHeight, true);
-        shatterRed[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt3), bitmapWidth, bitmapHeight, true);
-        shatterRed[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt4), bitmapWidth, bitmapHeight, true);
-        shatterRed[4] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt5), bitmapWidth, bitmapHeight, true);
-        shatterRed[5] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt6), bitmapWidth, bitmapHeight, true);
-        shatterRed[6] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt7), bitmapWidth, bitmapHeight, true);
-        shatterRed[7] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt8), bitmapWidth, bitmapHeight, true);
-        shatterRed[8] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt9), bitmapWidth, bitmapHeight, true);
-        shatterRed[9] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt10), bitmapWidth, bitmapHeight, true);
-        shatterRed[10] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt11), bitmapWidth, bitmapHeight, true);
-        shatterRed[11] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt12), bitmapWidth, bitmapHeight, true);
-        shatterRed[12] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt13), bitmapWidth, bitmapHeight, true);
-        shatterRed[13] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt14), bitmapWidth, bitmapHeight, true);
-        shatterRed[14] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt15), bitmapWidth, bitmapHeight, true);
-        shatterRed[15] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt16), bitmapWidth, bitmapHeight, true);
-        shatterRed[16] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt17), bitmapWidth, bitmapHeight, true);
-        shatterRed[17] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt18), bitmapWidth, bitmapHeight, true);
-        shatterRed[18] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt19), bitmapWidth, bitmapHeight, true);
-        shatterRed[19] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt20), bitmapWidth, bitmapHeight, true);
-        shatterRed[20] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt21), bitmapWidth, bitmapHeight, true);
-        shatterRed[21] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt22), bitmapWidth, bitmapHeight, true);
-        shatterRed[22] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt23), bitmapWidth, bitmapHeight, true);
-        shatterRed[23] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt24), bitmapWidth, bitmapHeight, true);
-        shatterRed[24] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt25), bitmapWidth, bitmapHeight, true);
-        shatterRed[25] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondredpt26), bitmapWidth, bitmapHeight, true);
+
+        Resources res = context.getResources();
+
+        int size = redShatterResourceIdsArr.size();
+
+        for(int i = 0; i < size; i++) {
+            //Bitmap temp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, redShatterResourceIdsArr.get(i)), bitmapWidth, bitmapHeight, false);
+            Bitmap temp = ((BitmapDrawable) ResourcesCompat.getDrawable(res, redShatterResourceIdsArr.get(i), null)).getBitmap();
+            temp = Bitmap.createScaledBitmap(temp, (bitmapWidth), bitmapHeight, false);
+
+            shatterRed[i] = temp;
+
+        }
+        for(int i = 0; i < size; i++){
+            //Bitmap temp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, redShatterResourceIdsArr.get(i)), bitmapWidth, bitmapHeight, false);
+            Bitmap temp = ((BitmapDrawable) ResourcesCompat.getDrawable(res, purpleShatterResourceIdsArr.get(i), null)).getBitmap();
+            temp = Bitmap.createScaledBitmap(temp, (bitmapWidth), bitmapHeight, false);
+
+            shatterPurple[i] = temp;
+        }
+        for(int i = 0; i < size; i++){
+            //Bitmap temp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, redShatterResourceIdsArr.get(i)), bitmapWidth, bitmapHeight, false);
+            Bitmap temp = ((BitmapDrawable) ResourcesCompat.getDrawable(res, greenShatterResourceIdsArr.get(i), null)).getBitmap();
+            temp = Bitmap.createScaledBitmap(temp, (bitmapWidth), bitmapHeight, false);
+
+            shatterGreen[i] = temp;
+        }
+        for(int i = 0; i < size; i++){
+            //Bitmap temp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, redShatterResourceIdsArr.get(i)), bitmapWidth, bitmapHeight, false);
+            Bitmap temp = ((BitmapDrawable) ResourcesCompat.getDrawable(res, blueShatterResourceIdsArr.get(i), null)).getBitmap();
+            temp = Bitmap.createScaledBitmap(temp, (bitmapWidth), bitmapHeight, false);
+
+            shatterBlue[i] = temp;
+        }
+        for(int i = 0; i < size; i++){
+            //Bitmap temp = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, redShatterResourceIdsArr.get(i)), bitmapWidth, bitmapHeight, false);
+            Bitmap temp = ((BitmapDrawable) ResourcesCompat.getDrawable(res, yellowShatterResourceIdsArr.get(i), null)).getBitmap();
+            temp = Bitmap.createScaledBitmap(temp, (bitmapWidth), bitmapHeight, false);
+
+            shatterYellow[i] = temp;
+        }
 
 
-        //green init
-        shatterGreen[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt1), bitmapWidth, bitmapHeight, true);
-        shatterGreen[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt2), bitmapWidth, bitmapHeight, true);
-        shatterGreen[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt3), bitmapWidth, bitmapHeight, true);
-        shatterGreen[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt4), bitmapWidth, bitmapHeight, true);
-        shatterGreen[4] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt5), bitmapWidth, bitmapHeight, true);
-        shatterGreen[5] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt6), bitmapWidth, bitmapHeight, true);
-        shatterGreen[6] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt7), bitmapWidth, bitmapHeight, true);
-        shatterGreen[7] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt8), bitmapWidth, bitmapHeight, true);
-        shatterGreen[8] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt9), bitmapWidth, bitmapHeight, true);
-        shatterGreen[9] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt10), bitmapWidth, bitmapHeight, true);
-        shatterGreen[10] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt11), bitmapWidth, bitmapHeight, true);
-        shatterGreen[11] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt12), bitmapWidth, bitmapHeight, true);
-        shatterGreen[12] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt13), bitmapWidth, bitmapHeight, true);
-        shatterGreen[13] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt14), bitmapWidth, bitmapHeight, true);
-        shatterGreen[14] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt15), bitmapWidth, bitmapHeight, true);
-        shatterGreen[15] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt16), bitmapWidth, bitmapHeight, true);
-        shatterGreen[16] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt17), bitmapWidth, bitmapHeight, true);
-        shatterGreen[17] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt18), bitmapWidth, bitmapHeight, true);
-        shatterGreen[18] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt19), bitmapWidth, bitmapHeight, true);
-        shatterGreen[19] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt20), bitmapWidth, bitmapHeight, true);
-        shatterGreen[20] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt21), bitmapWidth, bitmapHeight, true);
-        shatterGreen[21] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt22), bitmapWidth, bitmapHeight, true);
-        shatterGreen[22] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt23), bitmapWidth, bitmapHeight, true);
-        shatterGreen[23] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt24), bitmapWidth, bitmapHeight, true);
-        shatterGreen[24] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt25), bitmapWidth, bitmapHeight, true);
-        shatterGreen[25] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondgreenpt26), bitmapWidth, bitmapHeight, true);
-
-        //purple init
-        shatterPurple[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept1), bitmapWidth, bitmapHeight, true);
-        shatterPurple[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept2), bitmapWidth, bitmapHeight, true);
-        shatterPurple[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept3), bitmapWidth, bitmapHeight, true);
-        shatterPurple[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept4), bitmapWidth, bitmapHeight, true);
-        shatterPurple[4] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept5), bitmapWidth, bitmapHeight, true);
-        shatterPurple[5] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept6), bitmapWidth, bitmapHeight, true);
-        shatterPurple[6] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept7), bitmapWidth, bitmapHeight, true);
-        shatterPurple[7] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept8), bitmapWidth, bitmapHeight, true);
-        shatterPurple[8] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept9), bitmapWidth, bitmapHeight, true);
-        shatterPurple[9] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept10), bitmapWidth, bitmapHeight, true);
-        shatterPurple[10] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept11), bitmapWidth, bitmapHeight, true);
-        shatterPurple[11] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept12), bitmapWidth, bitmapHeight, true);
-        shatterPurple[12] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept13), bitmapWidth, bitmapHeight, true);
-        shatterPurple[13] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept14), bitmapWidth, bitmapHeight, true);
-        shatterPurple[14] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept15), bitmapWidth, bitmapHeight, true);
-        shatterPurple[15] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept16), bitmapWidth, bitmapHeight, true);
-        shatterPurple[16] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept17), bitmapWidth, bitmapHeight, true);
-        shatterPurple[17] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept18), bitmapWidth, bitmapHeight, true);
-        shatterPurple[18] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept19), bitmapWidth, bitmapHeight, true);
-        shatterPurple[19] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept20), bitmapWidth, bitmapHeight, true);
-        shatterPurple[20] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept21), bitmapWidth, bitmapHeight, true);
-        shatterPurple[21] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept22), bitmapWidth, bitmapHeight, true);
-        shatterPurple[22] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept23), bitmapWidth, bitmapHeight, true);
-        shatterPurple[23] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept24), bitmapWidth, bitmapHeight, true);
-        shatterPurple[24] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept25), bitmapWidth, bitmapHeight, true);
-        shatterPurple[25] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondpurplept26), bitmapWidth, bitmapHeight, true);
-
-        //yellow init
-        shatterYellow[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt1), bitmapWidth, bitmapHeight, true);
-        shatterYellow[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt2), bitmapWidth, bitmapHeight, true);
-        shatterYellow[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt3), bitmapWidth, bitmapHeight, true);
-        shatterYellow[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt4), bitmapWidth, bitmapHeight, true);
-        shatterYellow[4] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt5), bitmapWidth, bitmapHeight, true);
-        shatterYellow[5] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt6), bitmapWidth, bitmapHeight, true);
-        shatterYellow[6] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt7), bitmapWidth, bitmapHeight, true);
-        shatterYellow[7] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt8), bitmapWidth, bitmapHeight, true);
-        shatterYellow[8] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt9), bitmapWidth, bitmapHeight, true);
-        shatterYellow[9] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt10), bitmapWidth, bitmapHeight, true);
-        shatterYellow[10] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt11), bitmapWidth, bitmapHeight, true);
-        shatterYellow[11] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt12), bitmapWidth, bitmapHeight, true);
-        shatterYellow[12] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt13), bitmapWidth, bitmapHeight, true);
-        shatterYellow[13] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt14), bitmapWidth, bitmapHeight, true);
-        shatterYellow[14] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt15), bitmapWidth, bitmapHeight, true);
-        shatterYellow[15] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt16), bitmapWidth, bitmapHeight, true);
-        shatterYellow[16] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt17), bitmapWidth, bitmapHeight, true);
-        shatterYellow[17] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt18), bitmapWidth, bitmapHeight, true);
-        shatterYellow[18] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt19), bitmapWidth, bitmapHeight, true);
-        shatterYellow[19] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt20), bitmapWidth, bitmapHeight, true);
-        shatterYellow[20] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt21), bitmapWidth, bitmapHeight, true);
-        shatterYellow[21] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt22), bitmapWidth, bitmapHeight, true);
-        shatterYellow[22] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt23), bitmapWidth, bitmapHeight, true);
-        shatterYellow[23] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt24), bitmapWidth, bitmapHeight, true);
-        shatterYellow[24] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt25), bitmapWidth, bitmapHeight, true);
-        shatterYellow[25] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondyellowpt26), bitmapWidth, bitmapHeight, true);
-
-        //blue init
-
-        shatterBlue[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept1), bitmapWidth, bitmapHeight, true);
-        shatterBlue[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept2), bitmapWidth, bitmapHeight, true);
-        shatterBlue[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept3), bitmapWidth, bitmapHeight, true);
-        shatterBlue[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept4), bitmapWidth, bitmapHeight, true);
-        shatterBlue[4] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept5), bitmapWidth, bitmapHeight, true);
-        shatterBlue[5] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept6), bitmapWidth, bitmapHeight, true);
-        shatterBlue[6] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept7), bitmapWidth, bitmapHeight, true);
-        shatterBlue[7] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept8), bitmapWidth, bitmapHeight, true);
-        shatterBlue[8] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept9), bitmapWidth, bitmapHeight, true);
-        shatterBlue[9] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept10), bitmapWidth, bitmapHeight, true);
-        shatterBlue[10] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept11), bitmapWidth, bitmapHeight, true);
-        shatterBlue[11] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept12), bitmapWidth, bitmapHeight, true);
-        shatterBlue[12] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept13), bitmapWidth, bitmapHeight, true);
-        shatterBlue[13] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept14), bitmapWidth, bitmapHeight, true);
-        shatterBlue[14] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept15), bitmapWidth, bitmapHeight, true);
-        shatterBlue[15] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept16), bitmapWidth, bitmapHeight, true);
-        shatterBlue[16] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept17), bitmapWidth, bitmapHeight, true);
-        shatterBlue[17] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept18), bitmapWidth, bitmapHeight, true);
-        shatterBlue[18] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept19), bitmapWidth, bitmapHeight, true);
-        shatterBlue[19] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept20), bitmapWidth, bitmapHeight, true);
-        shatterBlue[20] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept21), bitmapWidth, bitmapHeight, true);
-        shatterBlue[21] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept22), bitmapWidth, bitmapHeight, true);
-        shatterBlue[22] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept23), bitmapWidth, bitmapHeight, true);
-        shatterBlue[23] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept24), bitmapWidth, bitmapHeight, true);
-        shatterBlue[24] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept25), bitmapWidth, bitmapHeight, true);
-        shatterBlue[25] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.shatteringdiamondbluept26), bitmapWidth, bitmapHeight, true);
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -320,24 +258,29 @@ public class DiamondCollection<num> {
     }
 
     public Bitmap getBitmapAnimated(ArrayList<Bitmap> arrBitmaps) { //animate shatter
+        try{
         count++;
-        if (this.count == this.vFlap) {
+        if (this.count == this.animationIncrementDelay) {
             for (int i = 0; i < arrBitmaps.size(); i++) {
                 if (i == arrBitmaps.size() - 1) {
                     this.idCurrentBitmap = 0;
                     break;
                 } else if (this.idCurrentBitmap == i) {
-                    idCurrentBitmap = i + 1;
+                    idCurrentBitmap = i + 1; //why breaks at 56
                     break;
                 }
             }
             count = 0;
+        }
 
+        }
+        catch(Exception e){
+            Log.d("error", e.getMessage());
         }
         return arrBitmaps.get(idCurrentBitmap);
     }
 
-    public void createDiamondShatterAnimator(int i) {
+        public void createDiamondShatterAnimator(int i) {
         this.startShatter = true; //gets set true in updated
 
         if(!initRedDiamonds) { //preventing duplicates
@@ -423,10 +366,10 @@ public class DiamondCollection<num> {
                 }
                 canvas.drawBitmap(bitmaps.get(i), d.getXLocation(), d.getYLocation(), null);
                 if(d.hasMultiplier()){ //it has a multiplier
-                    canvas.drawText("x" + d.multiplier, d.getXLocation() + (d.getBitmapWidth() / 2), d.getYLocation() + (d.getBitmapHeight() / 2), paint);
+                    canvas.drawText("x" + d.multiplier, d.getXLocation() + (bitmapWidth/2), d.getYLocation() + (bitmapHeight/2), paint);
                 }
                 else {//if its 1 its not a multiplier
-                    canvas.drawText("" + diamondScoreArr.get(i), d.getXLocation() + (d.getBitmapWidth() / 2), d.getYLocation() + (d.getBitmapHeight() / 2), paint);
+                    canvas.drawText("" + diamondScoreArr.get(i), d.getXLocation() + (bitmapWidth/ 2), d.getYLocation() + (bitmapHeight/ 2), paint);
                 }
             }
         }

@@ -70,12 +70,7 @@ public class Diamond {
         purpleDiamondBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamond);
         purpleDiamondBitmap = Bitmap.createScaledBitmap(purpleDiamondBitmap, (bitmapWidth), bitmapHeight, false);
 
-        greenDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.greendiamondblink);
-        blueDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bluediamondblink);
-        redDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.reddiamondblink);
-        yellowDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.yellowdiamondblink);
-        purpleDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.purplediamondblink);
-        transparentdiamond = greenDiamondBlinkBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.transparentdiamond);
+        transparentdiamond  = BitmapFactory.decodeResource(context.getResources(), R.drawable.transparentdiamond);
     }
 
     public boolean hasMultiplier(){

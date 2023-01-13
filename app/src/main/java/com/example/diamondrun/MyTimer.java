@@ -46,10 +46,10 @@ public class MyTimer {
         }
     }
 
-    public void resetTimer(){
+    public void resetTimer(int num){
         if(timerTask!= null){
             timerTask.cancel();
-            //time = 10;
+            time = num;
         }
     }
 
