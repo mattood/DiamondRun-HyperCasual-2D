@@ -17,18 +17,12 @@ public class Diamond {
     public Bitmap purpleDiamondBitmap;
     public Bitmap yellowDiamondBitmap;
     public Bitmap redDiamondBitmap;
-    public Bitmap greenDiamondBlinkBitmap;
-    public Bitmap blueDiamondBlinkBitmap;
-    public Bitmap purpleDiamondBlinkBitmap;
-    public Bitmap yellowDiamondBlinkBitmap;
-    public Bitmap redDiamondBlinkBitmap;
     public Bitmap transparentdiamond;
     Bitmap[] bitmapColorsArr;
     protected Bitmap bitmap;
     Random randNum;
     public int multiplier = 1;
     private boolean multiplierActive = false;
-    public int MAX_SCORE = 20;
     public int diamondScore;
 
     Diamond(Context context, int bmWidth, int bmHeight){
@@ -38,17 +32,17 @@ public class Diamond {
         bitmapColorsArr = new Bitmap[]{greenDiamondBitmap, blueDiamondBitmap, purpleDiamondBitmap, yellowDiamondBitmap, redDiamondBitmap};
         randNum = new Random(System.currentTimeMillis());
         getRandDiamondScore(); //random score for each diamond 0-20
-        resetMultiplier();
+        //resetMultiplier();
     }
 
-    public void resetMultiplier(){
-        if(randNum.nextInt(3) == 1){ //probability of occurring
+    /*public void resetMultiplier(){
+        if(randNum.nextInt(100) == 1){ //probability of occurring
             multiplier = randNum.nextInt(2)+2;
         }
-    }
+    }*/
 
     public int getRandDiamondScore(){
-        diamondScore = randNum.nextInt(20);
+        diamondScore = randNum.nextInt(5);
         return diamondScore;
     }
 

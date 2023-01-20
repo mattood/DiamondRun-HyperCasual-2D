@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
@@ -21,10 +22,10 @@ import java.util.LinkedList;
 public class DiamondCollection<num> {
     //collection of Diamond object / connectors
     private LinkedList<Diamond> diamonds;
-    private long lastFrameChangeTime = 0;
-    private int frameLengthInMillisecond = 25;
     Paint paint;
     private int diamondCollectionYSpeed = 3;
+    public int diamondCollectionMaxSpeed = 11;
+    public int diamondCollectionMinSpeed = 3;
     public boolean initResetBitmapsColors = false;
     GameGrid gameGrid;
     boolean initShatterDiamonds = false;
@@ -55,7 +56,8 @@ public class DiamondCollection<num> {
     public int maxShatterIndex = shatterRed.length-1;
     public int count, animationIncrementDelay, idCurrentBitmap;
 
-    DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight) {
+    DiamondCollection(Context context, int numDiamonds, int screenWidth, int screenHeight, GameGrid gameGrid) {
+        this.gameGrid = gameGrid;
         redShatterResourceIdsArr = new ArrayList<>();
         greenShatterResourceIdsArr = new ArrayList<>();
         blueShatterResourceIdsArr = new ArrayList<>();
@@ -64,14 +66,16 @@ public class DiamondCollection<num> {
         bitmapWidth = screenWidth / numDiamonds;
         this.numDiamonds = numDiamonds;
         bottomOfScreen = screenHeight;
-        gameGrid = new GameGrid(numDiamonds, screenWidth);
         diamonds = new LinkedList<Diamond>();//initializing DiamondCollection
         bitmaps = new LinkedList<Bitmap>();
+        Typeface typefaceBadaboom = ResourcesCompat.getFont(context, R.font.badaboom);
+        String s = "test";
 
         spawnDiamonds(context, numDiamonds);
         diamondScoreArr = new ArrayList<>(numDiamonds);
         initDiamondScoresArr();
         paint = new Paint();
+        paint.setTypeface(typefaceBadaboom);
         paint.setColor(Color.BLACK);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(Math.round(screenWidth/14f));
@@ -162,6 +166,10 @@ public class DiamondCollection<num> {
 
     }
 
+    public int getCollectionSpeed(){
+        return this.diamondCollectionYSpeed;
+    }
+
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
     }
@@ -217,13 +225,13 @@ public class DiamondCollection<num> {
         return (get_at(index).getXLocation() + rightX) / 2;
     }
 
-    public void evaluateMultiplierActive(Boolean multiplierActive){
+    /*public void evaluateMultiplierActive(Boolean multiplierActive){
         if(multiplierActive) {
             for (int i = 0; i < diamonds.size(); i++) {
                 diamonds.get(i).multiplier = 1; //setting all diamond multiplier to one so its inactive until timer up
             }
         }
-    }
+    }*/
 
     public void spawnDiamonds(Context context, int numDiamonds) {
         for (int i = 0; i < numDiamonds; i++) { //we setting the size of entire collection here where they are created
@@ -234,11 +242,11 @@ public class DiamondCollection<num> {
         setXLocation();
     }
 
-    public void resetDiamondMultiplier() {
+    /*public void resetDiamondMultiplier() {
         for (int i = 0; i < diamonds.size(); i++) { //going through entire linked list
             diamonds.get(i).resetMultiplier();
         }
-    }
+    }*/
 
     public void moveDiamondsDownScreen() {
         for (int i = 0; i < diamonds.size(); i++) { //going through entire linked list
@@ -256,6 +264,15 @@ public class DiamondCollection<num> {
         }
         return false;
     }
+
+    public void increaseSpeed(){
+        this.diamondCollectionYSpeed+=1;
+    }
+
+    public void decreaseSpeed(){
+        this.diamondCollectionYSpeed-=1;
+    }
+
 
     public Bitmap getBitmapAnimated(ArrayList<Bitmap> arrBitmaps) { //animate shatter
         try{
@@ -329,6 +346,9 @@ public class DiamondCollection<num> {
     }
 
     public void draw(Canvas canvas) {
+
+
+
         if (startShatter) { //collided correct color now animate shatter
             for (int i = 0; i < diamonds.size(); i++) {
                 Diamond d = diamonds.get(i);
@@ -365,12 +385,12 @@ public class DiamondCollection<num> {
                     bitmaps.add(this.bitmap); // adding each new bitmap to linked list
                 }
                 canvas.drawBitmap(bitmaps.get(i), d.getXLocation(), d.getYLocation(), null);
-                if(d.hasMultiplier()){ //it has a multiplier
+                /*if(d.hasMultiplier()){ //it has a multiplier
                     canvas.drawText("x" + d.multiplier, d.getXLocation() + (bitmapWidth/2), d.getYLocation() + (bitmapHeight/2), paint);
-                }
-                else {//if its 1 its not a multiplier
-                    canvas.drawText("" + diamondScoreArr.get(i), d.getXLocation() + (bitmapWidth/ 2), d.getYLocation() + (bitmapHeight/ 2), paint);
-                }
+                }*/
+                //if its 1 its not a multiplier
+                canvas.drawText("" + diamondScoreArr.get(i), d.getXLocation() + (bitmapWidth/ 2), d.getYLocation() + (bitmapHeight/ 2), paint);
+
             }
         }
     }

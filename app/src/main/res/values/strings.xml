@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Diamond Run</string>
+    <string name="points_string"><font color="#89F344">pts</font> </string>
+
 </resources>
