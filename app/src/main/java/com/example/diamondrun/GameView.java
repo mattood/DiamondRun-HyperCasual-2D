@@ -59,8 +59,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Paint paintAcrossXLine2;
     Paint paintAcrossYLine;
     Paint paintScore;
-    Paint paintMultiplier;
-    Paint paintMultiplierSeconds;
+    Paint paintTimer;
     private int diamondWidth;
     private int diamondHeight;
     int PLAYER_SCORE = 0;
@@ -127,7 +126,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         paintAcrossYLine.setStrokeWidth(8);*/
         paintScore = new Paint();
         paintScore.setColor(Color.WHITE);
-        paintScore.setTextSize(Math.round(screenWidth/14f));
+        paintScore.setTextSize(Math.round(screenWidth/10f));
         paintScore.setTypeface(typefaceBadaboom);
         /*paintMultiplier = new Paint();
         paintMultiplier.setTypeface(typefaceBadaboom);
@@ -140,10 +139,11 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         diamondWidth = gameGrid.getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
         scorePaintX = (screenX*3)/4;
-        xMiddleOfScoreXAndScreenX = (screenX + scorePaintX)/2;
+
         scorePaintY = screenY/18;
         gameTimerX = (int) (screenX/2 - paintScore.getTextSize());
         bitmapShardTransparent = playerDiamond.transparentdiamond;
+        xMiddleOfScoreXAndScreenX = scorePaintX - (bitmapShardTransparent.getWidth()/4);
         scorePaintHeight = (int) paintScore.getTextSize();
         scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, bitmapShardTransparent); //bitmap will be changed
         GameTimer.startTimer();
@@ -156,7 +156,6 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         //int timerX = time
         distBetwScoreXScoreShardX = (scoreKeeperShardX2 - scorePaintX);
         topScreenWidgetWidth = distBetwScoreXScoreShardX;
-        topScreenWidget = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.topscreenwidget), topScreenWidgetWidth, scoreKeeperShard.bitmapHeight, true);
 
         handler = new Handler();
         r = new Runnable() {
@@ -536,21 +535,26 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     }
 
     private boolean playerSwipedRight(MotionEvent e1, MotionEvent e2){
-        if(distance((int)e1.getX(), (int)e2.getX()) > 200 && e1.getX() < e2.getX()) { //make universal later
-            return true;
+        if(!playerFlickedFingerUp(e1, e2)) { //prevents from swiping right while flicking up
+            if (distance((int) e1.getX(), (int) e2.getX()) > 200 && e1.getX() < e2.getX()) { //make universal later
+                return true;
+            }
         }
         else{
             return false;
         }
+        return false;
     }
 
     private boolean playerSwipedLeft(MotionEvent e1, MotionEvent e2){
-        if(distance((int)e1.getX(), (int)e2.getX()) > 200 && e1.getX() > e2.getX() ){ //make universal later
-            return true;
+        if(!playerFlickedFingerUp(e1, e2)) {
+            if (distance((int) e1.getX(), (int) e2.getX()) > 200 && e1.getX() > e2.getX()) { //make universal later
+                return true;
+            } else {
+                return false;
+            }
         }
-        else{
-            return false;
-        }
+        return false;
     }
 
     @Override
@@ -568,7 +572,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         return false;
     }
 
-    public void onFingerSlidingLeftOrRight(MotionEvent e2) {
+    /*public void onFingerSlidingLeftOrRight(MotionEvent e2) {
         if (gameGrid.insideAxis(0, (int) e2.getX())) { //if his finger inside axis 1
             movePlayerDiamondIntoCenterAxis(0); //move him to center of this axis
         }
@@ -584,7 +588,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         if (gameGrid.insideAxis(4, (int) e2.getX())) { //if his finger inside axis 5
             movePlayerDiamondIntoCenterAxis(4); //move him to center of this axis
         }
-    }
+    }*/
 
 }
 

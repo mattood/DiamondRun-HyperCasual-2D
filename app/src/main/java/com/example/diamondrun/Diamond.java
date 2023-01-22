@@ -42,7 +42,7 @@ public class Diamond {
     }*/
 
     public int getRandDiamondScore(){
-        diamondScore = randNum.nextInt(5);
+        diamondScore = randNum.nextInt(4) + 1; //so that its never 0
         return diamondScore;
     }
 
