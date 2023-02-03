@@ -26,6 +26,7 @@ public class GameGrid {
     int screenHeight;
     Rect gridRect;
 
+
     GameGrid(int numAxis, int screenWidth, Context context, int screenHeight){
         axis_interval = screenWidth/numAxis;
         this.numAxis = numAxis;
@@ -79,7 +80,7 @@ public class GameGrid {
 
     public void draw(Canvas canvas){
 
-        for(int i = 0; i < numAxis; i++){
+        /*for(int i = 0; i < numAxis; i++){
            Diamond d = dc.get_at(i);
             if(dc.getBitmapAtIndex(i).sameAs(d.redDiamondBitmap)){
                 canvas.drawBitmap(gridred, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
@@ -102,7 +103,7 @@ public class GameGrid {
                 canvas.drawBitmap(gridblue, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
 
             }
-        }
+        }*/
 
     }
 

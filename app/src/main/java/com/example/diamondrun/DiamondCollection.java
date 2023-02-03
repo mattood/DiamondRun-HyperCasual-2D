@@ -24,7 +24,7 @@ public class DiamondCollection<num> {
     private LinkedList<Diamond> diamonds;
     Paint paint;
     private int diamondCollectionYSpeed = 3;
-    public int diamondCollectionMaxSpeed = 11;
+    public int diamondCollectionMaxSpeed = 13;
     public int diamondCollectionMinSpeed = 3;
     public boolean initResetBitmapsColors = false;
     GameGrid gameGrid;
@@ -34,7 +34,7 @@ public class DiamondCollection<num> {
     private int bottomOfScreen;
     private int bitmapWidth = 0;
     private int numDiamonds;
-    private int bitmapHeight = 250;
+    private int bitmapHeight;
     private int collectionYLocation;
     private boolean initGreenDiamonds, initRedDiamonds, initPurpleDiamonds, initYellowDiamonds, initBlueDiamonds = false;
     private Rect rect;
@@ -64,6 +64,7 @@ public class DiamondCollection<num> {
         purpleShatterResourceIdsArr = new ArrayList<>();
         yellowShatterResourceIdsArr = new ArrayList<>();
         bitmapWidth = screenWidth / numDiamonds;
+        bitmapHeight = screenWidth/4;
         this.numDiamonds = numDiamonds;
         bottomOfScreen = screenHeight;
         diamonds = new LinkedList<Diamond>();//initializing DiamondCollection
@@ -346,8 +347,6 @@ public class DiamondCollection<num> {
     }
 
     public void draw(Canvas canvas) {
-
-
 
         if (startShatter) { //collided correct color now animate shatter
             for (int i = 0; i < diamonds.size(); i++) {

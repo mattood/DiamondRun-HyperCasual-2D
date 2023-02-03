@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
@@ -13,17 +14,20 @@ public class PlayerDiamond extends Diamond  {
     private Rect rect;
 
     private int launchSpeed = 20;
-    private final int baseLine;
+    private final int baseLineY;
+    private final int baseLineX;
     Matrix matrix;
     private int playerDiamondColorIndex = -1;
+    private boolean playerDiamondInactive = false;
 
     public PlayerDiamond(Context context, int bmWidth, int bmHeight, int screenWidth, int screenHeight)  {
         super (context, bmWidth, bmHeight);
-
+        paintDiamond = new Paint();
+        paintDiamond.setAlpha(80);
         this.setXLocation(screenWidth/2 - bmWidth/2); //centered in screen
         this.setYLocation((screenHeight*4)/5);
-        baseLine = this.getYLocation();
-
+        baseLineY = this.getYLocation();
+        baseLineX = this.getXLocation();
         playerDiamondColorIndex = randNum.nextInt(bitmapColorsArr.length);
         this.bitmap = this.bitmapColorsArr[playerDiamondColorIndex]; //ndomDiamondColorBitmap();
         matrix = new Matrix();
@@ -34,7 +38,6 @@ public class PlayerDiamond extends Diamond  {
         return rect;
     }
 
-
     public Bitmap getChangedColorBitmap(){ //ensures that color change occurs in a sequence
         ++playerDiamondColorIndex;
         Bitmap newColorBitmap = bitmapColorsArr[playerDiamondColorIndex % bitmapColorsArr.length]; //mod to make sure index is always inside array bounds, 0-4 for this array
@@ -43,19 +46,39 @@ public class PlayerDiamond extends Diamond  {
     }
 
     public void draw(Canvas canvas){
-        canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
+
+        if(!playerDiamondInactive) {
+            canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), null);
+        }
+        else{
+            canvas.drawBitmap(bitmap, getXLocation(), getYLocation(), paintDiamond);
+
+        }
+    }
+
+    public void setPlayerDiamondInactive(Boolean checkPlayerDiamondInactive){
+        this.playerDiamondInactive = checkPlayerDiamondInactive;
     }
 
     public void resetYLocation(){
-        this.setYLocation(getBaseStartLine());
+        this.setYLocation(getBaseStartLineY());
     }
 
-    public int getBaseStartLine(){
-        return this.baseLine;
-    } //just his initial starting position as set in constructor
+    public void resetXLocation(){
+        this.setXLocation(getBaseStartLineX());
+    }
+
+
+    public int getBaseStartLineY(){
+        return this.baseLineY;
+    } //just his initial starting Y position as set in constructor
+
+    public int getBaseStartLineX(){
+        return this.baseLineX;
+    } //just his initial starting X position as set in constructor
 
     public boolean belowBaseline(int eventGetX){
-        if(eventGetX > getBaseStartLine()){
+        if(eventGetX > getBaseStartLineY()){
             return true;
         }
         else{
@@ -63,7 +86,7 @@ public class PlayerDiamond extends Diamond  {
         }
     }
     public boolean aboveBaseline(int eventGetY){
-        if(eventGetY < getBaseStartLine()){
+        if(eventGetY < getBaseStartLineY()){
             return true;
         }
         else{

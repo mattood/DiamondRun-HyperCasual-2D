@@ -3,11 +3,12 @@ package com.example.diamondrun;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Paint;
 
 import java.util.Random;
 
 public class Diamond {
-    private int xLocation;
+    public int xLocation;
     public int yLocation;
     private int bitmapWidth;
     private int bitmapHeight;
@@ -24,8 +25,10 @@ public class Diamond {
     public int multiplier = 1;
     private boolean multiplierActive = false;
     public int diamondScore;
+    Paint paintDiamond;
 
     Diamond(Context context, int bmWidth, int bmHeight){
+
         bitmapWidth = bmWidth;
         bitmapHeight = bmHeight;
         initBitmapDiamonds(context);
@@ -42,7 +45,8 @@ public class Diamond {
     }*/
 
     public int getRandDiamondScore(){
-        diamondScore = randNum.nextInt(4) + 1; //so that its never 0
+
+        diamondScore = randNum.nextInt(5) + 1; //so that its never 0
         return diamondScore;
     }
 

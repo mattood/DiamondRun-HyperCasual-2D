@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1016645660971",
+    "project_id": "diamond-run",
+    "storage_bucket": "diamond-run.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016645660971:android:b8612a8b7f2a4583dc156e",
+        "android_client_info": {
+          "package_name": "com.example.diamondrun"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016645660971-r115ohsaq22refom57p8c8j70vetkh0i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.diamondrun",
+            "certificate_hash": "8a3f14e4681149b729f78bb7bd4a699196a5812a"
+          }
+        },
+        {
+          "client_id": "1016645660971-ud64n2ib0ulc9is7v0g6humoj9crob8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBAC9ZSbY6h15hYK8nG6DF65EJ_EqluuM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016645660971-ud64n2ib0ulc9is7v0g6humoj9crob8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
