@@ -1,6 +1,10 @@
 package com.example.diamondrun;
 
+import static com.example.diamondrun.GameActivity.name;
+import static com.example.diamondrun.GameActivity.user;
+
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 
 import android.graphics.BitmapFactory;
@@ -10,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -17,13 +22,19 @@ import android.view.View;
 import android.os.Handler;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GestureDetectorCompat;
 
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -90,10 +101,22 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     Paint paintRedScreen;
     private boolean initRedScreenFlash = false;
 
+    FirebaseDatabase database;
+    DatabaseReference databaseReference;
+    User user1;
+    User user2;
 
 
-    public GameView(Context context, int screenWidth, int screenHeight)  {
+    //DatabaseReference databaseReference = database.getReference("Username");
+
+
+
+    public GameView(Context context, int screenWidth, int screenHeight, User user, DatabaseReference databaseReference)  {
         super(context);
+
+        database = FirebaseDatabase.getInstance();
+        this.databaseReference = databaseReference;
+        this.user1 = user;
         MultiplierTimer = new MyTimer(10);
         sound = new SoundPlayer(this.getContext());
         GameTimer = new MyTimer(60);
@@ -246,6 +269,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
     public void update(){
 
+        handleGameRounds();
         playerDiamond.setPlayerDiamondInactive(playerDiamondInactive);
 
         backgroundLocationHandler();
@@ -670,7 +694,19 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         int turns = 0;
 
         if(GameTimer.getTimerSeconds() == 50){
-            //databaseReference.setValue(PLAYER_SCORE);
+
+            //saving user score at end of game
+            user1.setScore(PLAYER_SCORE);
+
+            HashMap<String, Object> hashMap = new HashMap();
+            hashMap.put("score", user1.getScore());
+            hashMap.put("name", user1.getName());
+
+            //putting hashmap values into database as two children
+            databaseReference.child("Users").child(user1.getName()).updateChildren(hashMap);
+
+
+
         }
     }
 

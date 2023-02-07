@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,6 +36,8 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
+    User user1;
+    User user2;
     Animation backgroundAnim;
     Animation diamondWordAnim;
     Animation runWordAnim;
@@ -51,14 +54,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREF_LOGIN = "LOGIN_PREF";
     private static final String KEY_CREDENTIALS = "LOGIN_CREDENTIALS";
 
-    //retrieving the database
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-    //creating a reference/ location where the data is going to go
-    DatabaseReference databaseReference = database.getReference("Location");
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -66,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         SharedPreferences preferences = getSharedPreferences(PREF_LOGIN, MODE_PRIVATE);
-
 
 
         //username never been saved so take us into playername class to set it
@@ -144,18 +138,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
+            findViewById(R.id.singlePlayerBtn).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(MainActivity.this, GameActivity.class));
 
                 }
             });
-        }
-        //storing player username to database
-        databaseReference.child("Username").setValue(preferences.getString(KEY_CREDENTIALS, ""));
-    }
 
+            findViewById(R.id.multiPlayerBtn).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, MultiplayerGames.class));
+
+                }
+            });
+        }
+
+    }
 }
 
 

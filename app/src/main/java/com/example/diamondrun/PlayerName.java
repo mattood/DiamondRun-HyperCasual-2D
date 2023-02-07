@@ -22,6 +22,7 @@ public class PlayerName extends AppCompatActivity {
     public static final String PREF_LOGIN = "LOGIN_PREF";
     public static final String KEY_CREDENTIALS = "LOGIN_CREDENTIALS";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,9 +53,6 @@ public class PlayerName extends AppCompatActivity {
                     //inserting typed et into editor
                     editor.putString(KEY_CREDENTIALS, getPlayerName);
                     editor.commit();
-
-                    //child name and value. Saving player name to database username child
-                    //databaseReference.child("Username").setValue(getPlayerName);
 
                     startActivity(intent);
                     finish();
