@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -20,7 +21,8 @@ import java.util.HashMap;
 public class SendInvite extends AppCompatActivity {
 
     String name;
-    private Button sendInviteBtn;
+    String uSessionId;
+    private ImageView sendInviteBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,7 @@ public class SendInvite extends AppCompatActivity {
         DatabaseReference databaseReference = database.getReference("DiamondRun");
 
         SharedPreferences preferences = getSharedPreferences(PREF_LOGIN, MODE_PRIVATE);
-        sendInviteBtn = (Button) findViewById(R.id.sendInviteBtn);
+        sendInviteBtn = (ImageView) findViewById(R.id.sendInviteBtn);
 
         //storing the saved users name into name
         name = preferences.getString(KEY_CREDENTIALS, "");
@@ -53,8 +55,10 @@ public class SendInvite extends AppCompatActivity {
                 hashMap.put("source", name);
                 hashMap.put("dest", getPlayerName);
                 hashMap.put("status", "null");
+                uSessionId = databaseReference.push().getKey(); //creating the key here so we can retrieve it later
+                hashMap.put("uSessionID", uSessionId);
                 //new database child being added with source and dest players
-                databaseReference.child("Invites").push().setValue(hashMap);
+                databaseReference.child("Invites").child(uSessionId).setValue(hashMap);
                 Intent intent = new Intent(SendInvite.this, MultiplayerGames.class);
                 startActivity(intent);
             }
@@ -62,5 +66,6 @@ public class SendInvite extends AppCompatActivity {
     }
 
 
+    //if a session has me as user2 then it means theres an accepted game that i sent the invite
 
 }

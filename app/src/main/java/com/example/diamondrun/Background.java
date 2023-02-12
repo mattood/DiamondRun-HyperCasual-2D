@@ -13,10 +13,10 @@ public class Background {
     int screenY;
     int x,y = 0;
     private Bitmap bitmap;
-    Background(int screenX, int screenY, Context context){
+    Background(int screenX, int screenY, Context context, int drawable){
         this.screenX = screenX;
         this.screenY = screenY;
-        this.bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.background), screenX, screenY, true);
+        this.bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), drawable), screenX, screenY, true);
     }
 
     //spaceFieldImgs.add(context.getResources().getIdentifier("ezgifframe"+i, "drawable", context.getPackageName()));

@@ -167,6 +167,10 @@ public class DiamondCollection<num> {
 
     }
 
+    public void freezeDiamondCollection(){
+        this.diamondCollectionYSpeed = 0;
+    }
+
     public int getCollectionSpeed(){
         return this.diamondCollectionYSpeed;
     }

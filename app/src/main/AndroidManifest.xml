@@ -16,16 +16,22 @@
         tools:targetApi="33">
         <activity
             android:name=".MyInvites"
-            android:exported="false" />
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".SendInvite"
-            android:exported="false" />
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".MultiplayerGames"
-            android:exported="false" />
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".PlayerName"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

@@ -2,6 +2,7 @@ package com.example.diamondrun;
 
 import static com.example.diamondrun.GameActivity.name;
 import static com.example.diamondrun.GameActivity.user;
+import static com.example.diamondrun.PlayerName.KEY_CREDENTIALS;
 
 import android.content.Context;
 import android.content.Intent;
@@ -65,12 +66,12 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     private GameGrid gameGrid;
     Rect rect;
     private boolean flickOccured = false;
-
+    Paint paintRound;
     private int CURR_MULTIPLIER = 1;
     Random randScore;
     Random randMultiplierScore;
     String text;
-
+    String textRound;
     Paint popUpScore;
 
     Paint paintScore;
@@ -82,6 +83,9 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     int scorePaintX, scorePaintY;
     DiamondShard diamondShard;
     DiamondShard scoreKeeperShard;
+    DiamondShard round1Shard;
+    DiamondShard round2Shard;
+    DiamondShard round3Shard;
     public ArrayList<DiamondShard> arrDiamondShards = new ArrayList<>();
     int initShardIndex = 0;
     Bitmap bitmapShardTransparent;
@@ -100,15 +104,16 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
     private SoundPlayer sound;
     Paint paintRedScreen;
     private boolean initRedScreenFlash = false;
+    Background timesUpBackground;
 
     FirebaseDatabase database;
     DatabaseReference databaseReference;
     User user1;
     User user2;
+    private boolean roundEnd = false;
+    OkButton okButton;
 
-
-    //DatabaseReference databaseReference = database.getReference("Username");
-
+    HashMap<String, Object> sessionsHashMap = new HashMap<>();
 
 
     public GameView(Context context, int screenWidth, int screenHeight, User user, DatabaseReference databaseReference)  {
@@ -119,7 +124,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         this.user1 = user;
         MultiplierTimer = new MyTimer(10);
         sound = new SoundPlayer(this.getContext());
-        GameTimer = new MyTimer(60);
+        GameTimer = new MyTimer(30);
         gestureDetector = new GestureDetector(this.getContext(), this);
         gestureDetector.setOnDoubleTapListener(this);
         rect = new Rect();
@@ -138,6 +143,7 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
                 screenHeight);
         screenX = screenWidth;
         screenY = screenHeight;
+
         popUpScore = new Paint();
         Typeface typefaceBadaboom = ResourcesCompat.getFont(context, R.font.badaboom);
         popUpScore.setTypeface(typefaceBadaboom);
@@ -151,14 +157,28 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         paintScore.setTextSize(Math.round(screenWidth/10f));
         paintScore.setTypeface(typefaceBadaboom);
         paintScore.setTextAlign(Paint.Align.CENTER);
+        paintRound = new Paint();
+        paintRound.setTypeface(typefaceBadaboom);
+        paintRound.setTextSize(Math.round(screenWidth/11f));
+        paintRound.setColor(Color.WHITE);
+        textRound = "Round";
+        Rect boundsRoundPaint = new Rect();
+        int paintRoundHeight = (int) paintRound.getTextSize();
+
+        //textRound.length not working idk why
+        paintRound.getTextBounds(textRound, 0, textRound.length(), boundsRoundPaint);
+        int round_text_height =  boundsRoundPaint.height();
+        int round_text_width =  boundsRoundPaint.width();
+
         diamondWidth = gameGrid.getAxisLength();
         diamondHeight = playerDiamond.getBitmapHeight();
+
         Rect bounds = new Rect();
         text = " pts";
         paintScore.getTextBounds(text, 0, text.length(), bounds);
-
         int text_height =  bounds.height();
         int text_width =  bounds.width();
+
         scorePaintY = screenY/18;
         gameTimerX =  (screenX/2 );
         scorePaintX = (screenX) - text_width;
@@ -166,9 +186,13 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         xMiddleOfScoreXAndScreenX = (screenX *3)/4 -bitmapShardTransparent.getWidth()/6 ;
         scorePaintHeight = (int) paintScore.getTextSize();
         scoreKeeperShard = new DiamondShard(xMiddleOfScoreXAndScreenX, scorePaintY/2, bitmapShardTransparent); //bitmap will be changed
+        round1Shard = new DiamondShard(round_text_width, round_text_height/2, bitmapShardTransparent);
+        round2Shard = new DiamondShard(round1Shard.xLocation+(round1Shard.bitmapWidth*3)/4, round_text_height/2, bitmapShardTransparent);
+        round3Shard = new DiamondShard(round2Shard.xLocation+(round2Shard.bitmapWidth*3)/4, round_text_height/2, bitmapShardTransparent);
+
         GameTimer.startTimer();
-        background1 = new Background(screenX, screenY, context);
-        background2 = new Background(screenX, screenY, context);
+        background1 = new Background(screenX, screenY, context, R.drawable.background);
+        background2 = new Background(screenX, screenY, context, R.drawable.background);
         background2.y = -screenY; //
         background1.y = 0;
         int scoreKeeperShardX2 = scoreKeeperShard.xLocation + scoreKeeperShard.bitmapWidth;
@@ -176,6 +200,11 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         //int timerX = time
         distBetwScoreXScoreShardX = (scoreKeeperShardX2 - scorePaintX);
         topScreenWidgetWidth = distBetwScoreXScoreShardX;
+
+        timesUpBackground = new Background(screenX, screenY, context, R.drawable.timesupbackground);
+
+        okButton = new OkButton(context, screenHeight, screenWidth);
+
 
         handler = new Handler();
         r = new Runnable() {
@@ -194,6 +223,9 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         background1.draw(canvas);
         background2.draw(canvas);
 
+        gameGrid.draw(canvas);
+
+
         /*for(int i = 0; i < numDiamonds; i++){
             if(diamondCollection.get_at(i).bitmap != null){
                 gameGrid.draw(canvas);
@@ -201,6 +233,11 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         }*/
         if(diamondCollectionNotVisible == false) { //shatter fully animated on collision, next spawn we will set it true
             diamondCollection.draw(canvas);
+        }
+
+        if(roundEnd){
+            timesUpBackground.draw(canvas);
+            okButton.draw(canvas);
         }
 
         if(diamondShard!=null) { //only appears upon shatter
@@ -219,6 +256,11 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
         canvas.drawText(": " + multiplierTimerSeconds, multiplierTimeX, scorePaintY, paintMultiplier); //fix values*/
         canvas.drawText("" + GameTimer.formatTime(GameTimer.getTimerSeconds(), GameTimer.getTimerMinutes()), gameTimerX, scorePaintY, paintScore); //fix values
 
+        canvas.drawText("Round", 0,scorePaintY,paintRound);
+
+        round1Shard.draw(canvas);
+        round2Shard.draw(canvas);
+        round3Shard.draw(canvas);
 
         if(initRedScreenFlash) { //gets init when hits wrong color diamond
             evaluateScreenBlink(canvas);
@@ -254,16 +296,17 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
 
     public void backgroundLocationHandler(){
-        background1.y+=1;
-        background2.y+=1;
+        if(!roundEnd) { //when round ends then it stops moving
+            background1.y += 1;
+            background2.y += 1;
 
-        if(background1.y >= screenY) { //top of background1 passes bottom of screen
-            background1.y = -screenY;
-        }
+            if (background1.y >= screenY) { //top of background1 passes bottom of screen
+                background1.y = -screenY;
+            }
 
-        if(background2.y >= screenY ){ //top of background1 passes bottom of screen
-            background2.y = -screenY;
-
+            if (background2.y >= screenY) { //top of background1 passes bottom of screen
+                background2.y = -screenY;
+            }
         }
     }
 
@@ -356,20 +399,20 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
                         sound.playErrorSound();
                         initRespawn = true; //starting respawn to baseline
                         playerDiamondInactive = true; //wrong color so make diamond inactive
-
+                        initDiamondCollision = false; //collision occurred without shatter we have to reset it
                         initRedScreenFlash = true;
 
                         if (diamondCollection.getCollectionSpeed() > diamondCollection.diamondCollectionMinSpeed) {
                             diamondCollection.decreaseSpeed(); //speed can decrease when he hits wrong color as long as not less than min speed
                         }
-                        if (playerDiamond.getYLocation() == playerDiamond.getBaseStartLineY()) { //collided with wrong color at baseline so knock player off screen
+                        /*if (playerDiamond.getYLocation() == playerDiamond.getBaseStartLineY()) { //collided with wrong color at baseline so knock player off screen
                             dropPlayerDiamond = true; //makes player diamond fall off screen
-                        }
+                        }*/
                     }
                     if (flickOccured) { //if flick occurred and collided with diamond, bounce it back to start
 
                         flickOccured = false; //resets upon collision and launch
-                        initDiamondCollision = false; //collision occurred without shatter we have to reset it
+                        //initDiamondCollision = false; //collision occurred without shatter we have to reset it
                     }
 
                 }
@@ -616,6 +659,18 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
+
+        if(roundEnd) {
+            if (okButton.fingerTappedOkayButton(e.getX(), e.getY())) {
+                Toast.makeText(this.getContext(), "player tapped ok button", Toast.LENGTH_SHORT).show();
+                //updating user1 score, and turn as user2 name into database at correct location
+                databaseReference.child("Sessions").child(MultiplayerGames.uniqueSessionId).updateChildren(sessionsHashMap);
+
+                //taking back to multiplayer games screen on ok button click
+                this.getContext().startActivity(new Intent(this.getContext(), MultiplayerGames.class));
+
+            }
+        }
         playerDiamond.getChangedColorBitmap(); //changes player diamond color to a random color thats not the same
         return false;
     }
@@ -691,12 +746,15 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
 
     public void handleGameRounds(){
 
-        int turns = 0;
 
-        if(GameTimer.getTimerSeconds() == 50){
+        if(GameTimer.getTimerSeconds() == 0){
 
-            //saving user score at end of game
-            user1.setScore(PLAYER_SCORE);
+            GameTimer.stopTimer();
+            roundEnd = true; //round over
+            playerDiamondInactive = true; //make him inactive after game
+            diamondCollection.freezeDiamondCollection(); //stop diamondcollection moving down
+
+
 
             HashMap<String, Object> hashMap = new HashMap();
             hashMap.put("score", user1.getScore());
@@ -706,6 +764,51 @@ public class GameView extends View implements GestureDetector.OnDoubleTapListene
             databaseReference.child("Users").child(user1.getName()).updateChildren(hashMap);
 
 
+            //update user 1 score in database after game
+            sessionsHashMap.put("user1score", user1.getScore());
+
+            //get the name of user2 from the database from the unique session
+            databaseReference.child("Sessions").child(MultiplayerGames.uniqueSessionId).child("user2").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String user2Name = snapshot.getValue().toString(); //getting name stored at database under user2
+                    user2 = new User(user2Name); //create object of user2
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                }
+            });
+
+            //finding whos turn is listed in database under the correct sessions to know who to update score
+            databaseReference.child("Sessions").child(MultiplayerGames.uniqueSessionId).child("turn").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    //if turn is user 2
+                    if(snapshot.getValue().toString().equals(user2.getName())){
+                        //saving user score at end of game
+                        user1.setScore(PLAYER_SCORE);
+                        //update user 1 score in database after game
+                        sessionsHashMap.put("user1score", user1.getScore());
+                        //player1 just played change turn now to player2 in database
+                        sessionsHashMap.put("turn", user2.getName());
+                    }
+                    else{    //turn is user 1
+                        user2.setScore(PLAYER_SCORE);
+                        sessionsHashMap.put("user2score", user2.getScore());
+                        //player2 just played change turn now to player1 in database
+                        sessionsHashMap.put("turn", user1.getName());
+                        //player2 just played change turn now to player1 in database
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
 
         }
     }

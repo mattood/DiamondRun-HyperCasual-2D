@@ -33,8 +33,8 @@ public class GameGrid {
         paintGridLines = new Paint();
         paintGridLines.setColor(Color.BLACK);
         paintGridLines.setStrokeWidth(10);
-        paintInnerGrids = new Paint();
-        paintInnerGrids.setAlpha(7);
+        //paintInnerGrids = new Paint();
+       // paintInnerGrids.setAlpha(7);
         this.screenHeight = screenHeight;
         gridRect = new Rect();
         initGridBitmaps(context);
@@ -71,39 +71,16 @@ public class GameGrid {
 
     public void initGridBitmaps(Context context){
 
-        gridblue = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.gridblue), getAxisLength(), screenHeight, true);
-        gridgreen = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.gridgreen), getAxisLength(), screenHeight, true);
+        gridblue = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.timesupbackground), getAxisLength(), screenHeight, true);
+        gridgreen = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.timesupbackground), getAxisLength(), screenHeight, true);
         gridpurple = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.gridpurple), getAxisLength(), screenHeight, true);
-        gridyellow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.gridyellow), getAxisLength(), screenHeight, true);
+        gridyellow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.timesupbackground), getAxisLength(), screenHeight, true);
         gridred = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.gridred), getAxisLength(), screenHeight, true);
     }
 
     public void draw(Canvas canvas){
 
-        /*for(int i = 0; i < numAxis; i++){
-           Diamond d = dc.get_at(i);
-            if(dc.getBitmapAtIndex(i).sameAs(d.redDiamondBitmap)){
-                canvas.drawBitmap(gridred, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
 
-            }
-            else if(dc.getBitmapAtIndex(i).sameAs(d.greenDiamondBitmap)){
-                canvas.drawBitmap(gridgreen, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
-
-            }
-            else if(dc.getBitmapAtIndex(i).sameAs(d.purpleDiamondBitmap)){
-                canvas.drawBitmap(gridpurple, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
-
-            }
-            else if(dc.getBitmapAtIndex(i).sameAs(d.yellowDiamondBitmap)){
-                canvas.drawBitmap(gridyellow, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
-
-
-            }
-            else if(dc.getBitmapAtIndex(i).sameAs(d.blueDiamondBitmap)){
-                canvas.drawBitmap(gridblue, getDiamondXposition(getAxisLength(), i), 0, paintInnerGrids);
-
-            }
-        }*/
 
     }
 

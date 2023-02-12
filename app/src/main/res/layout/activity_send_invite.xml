@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,34 +7,39 @@
     android:background="@drawable/background"
     tools:context=".SendInvite">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="222dp"
+        android:src="@drawable/enterusernamebox" />
+
     <EditText
         android:id="@+id/playerNameInviteEt"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/blue"
+        android:layout_height="130dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="-1dp"
+        android:layout_marginTop="310dp"
         android:hint="Enter a Username"
+        android:src="@drawable/enterusernamebox"
         android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textColorHint="@color/white"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        android:backgroundTint="@android:color/transparent"
+        android:textSize="30dp"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/playerNameInviteEt"
-        app:layout_constraintVertical_bias="0.13"
-        android:text="send"
-        android:textSize="18sp"
-        android:textStyle="bold"
+    <ImageView
         android:id="@+id/sendInviteBtn"
-        />
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_marginTop="410dp"
+        android:layout_marginBottom="295dp"
+        android:src="@drawable/sendinvitebutton" />
+
+</RelativeLayout>
